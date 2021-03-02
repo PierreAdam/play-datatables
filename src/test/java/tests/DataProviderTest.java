@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * @since 21.03.02
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class TestDataProvider {
+public class DataProviderTest {
 
     private final Logger logger;
 
@@ -35,8 +35,8 @@ public class TestDataProvider {
     /**
      * Instantiates a new Test data provider.
      */
-    TestDataProvider() {
-        this.logger = LoggerFactory.getLogger(TestDataProvider.class);
+    DataProviderTest() {
+        this.logger = LoggerFactory.getLogger(DataProviderTest.class);
         this.myDataTable = new MyDataTable(null);
         this.myDataTable.setGlobalSearchHandler((dummyProvider, search) ->
                 dummyProvider.alterData(list -> list.stream().filter(entity ->
