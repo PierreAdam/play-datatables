@@ -1,0 +1,113 @@
+package com.jackson42.play.datatables.interfaces;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.jackson42.play.datatables.entities.Parameters;
+import com.jackson42.play.datatables.enumerations.OrderEnum;
+import play.mvc.Http;
+import play.twirl.api.Html;
+
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+/**
+ * PlayDataTables.
+ *
+ * @param <PROVIDER> the type parameter
+ * @param <ENTITY>   the type parameter
+ * @param <PAYLOAD>  the type parameter
+ * @author Pierre Adam
+ * @since 21.03.01
+ */
+public interface PlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Payload> {
+
+    /**
+     * The initial where condition. Is called on each forged request and should not contains orders or weird things.
+     *
+     * @param initialQuery the consumer that allows to set the initial query.
+     */
+    void setInitProviderConsumer(final Consumer<PROVIDER> initialQuery);
+
+    /**
+     * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
+     * If not set, the answer will try to reach the variable on the given T class.
+     *
+     * @param field         the field name
+     * @param fieldSupplier the field display supplier
+     */
+    void setFieldDisplaySupplier(final String field, final Function<ENTITY, String> fieldSupplier);
+
+    /**
+     * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
+     * If not set, the answer will try to reach the variable on the given T class.
+     *
+     * @param field         the field name
+     * @param fieldSupplier the field display supplier
+     */
+    void setFieldDisplaySupplier(final String field, final BiFunction<ENTITY, Context<PAYLOAD>, String> fieldSupplier);
+
+    /**
+     * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
+     * If not set, the answer will try to reach the variable on the given T class.
+     *
+     * @param field         the field name
+     * @param fieldSupplier the field display supplier
+     */
+    void setFieldDisplayHtmlSupplier(final String field, final Function<ENTITY, Html> fieldSupplier);
+
+    /**
+     * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
+     * If not set, the answer will try to reach the variable on the given T class.
+     *
+     * @param field         the field name
+     * @param fieldSupplier the field display supplier
+     */
+    void setFieldDisplayHtmlSupplier(final String field, final BiFunction<ENTITY, Context<PAYLOAD>, Html> fieldSupplier);
+
+    /**
+     * The fields search handler. If set for a given field, the handler will be called when searching on that field.
+     * If not set, the search will have no effect.
+     *
+     * @param field         the field name
+     * @param searchHandler the field search handler
+     */
+    void setSearchHandler(final String field, final BiConsumer<PROVIDER, String> searchHandler);
+
+    /**
+     * The fields order handler. If set for a given field, the handler will be called when ordering on that field.
+     * If not set, the search will be set to the name of the field followed by "ASC" or "DESC"
+     *
+     * @param field        the field name
+     * @param orderHandler the field order handler
+     */
+    void setOrderHandler(final String field, final BiConsumer<PROVIDER, OrderEnum> orderHandler);
+
+    /**
+     * The global search supplier. If set, the handler will be called when a search not specific to a field is required.
+     *
+     * @param globalSearchHandler the global search handler
+     */
+    void setGlobalSearchHandler(final BiConsumer<PROVIDER, String> globalSearchHandler);
+
+    /**
+     * Build the Ajax result in the form of a Json ObjectNode. Parameters SHOULD come from a form.
+     *
+     * @param request    the request
+     * @param parameters the parameters
+     * @param payload    the payload
+     * @return the Json ObjectNode
+     * @see Parameters
+     */
+    JsonNode getAjaxResult(final Http.Request request, final Parameters parameters, final PAYLOAD payload);
+
+    /**
+     * Build the Ajax result in the form of a Json ObjectNode. Parameters SHOULD come from a form.
+     *
+     * @param request    the request
+     * @param parameters the parameters
+     * @return the Json ObjectNode
+     * @see Parameters
+     */
+    JsonNode getAjaxResult(final Http.Request request, final Parameters parameters);
+}
