@@ -7,7 +7,7 @@
 
     <groupId>com.jackson42.play</groupId>
     <artifactId>play-datatables</artifactId>
-    <version>21.03-SNAPSHOT</version>
+    <version>21.03</version>
     <packaging>jar</packaging>
     <name>Play-DataTables</name>
     <description>A PlayFramework abstraction to parse queries from JavaScript library DataTables</description>
