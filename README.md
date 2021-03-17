@@ -1,5 +1,6 @@
 # Play-DataTables
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e7981d1ca2ea47f88df462ecc57d1769)](https://app.codacy.com/gh/PierreAdam/play-datatables?utm_source=github.com&utm_medium=referral&utm_content=PierreAdam/play-datatables&utm_campaign=Badge_Grade_Settings)
 [![Latest release](https://img.shields.io/github/v/release/PierreAdam/play-datatables)](https://github.com/PierreAdam/play-datatables/releases/latest)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/8078f113e10049f1abdb621da80c8928)](https://www.codacy.com/gh/PierreAdam/play-datatables/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=PierreAdam/play-datatables&amp;utm_campaign=Badge_Grade)
 [![Build Status](https://travis-ci.com/PierreAdam/play-datatables.svg?branch=master)](https://travis-ci.com/PierreAdam/play-datatables)
