@@ -54,13 +54,13 @@ import java.util.function.*;
 /**
  * APlayDataTables.
  *
- * @param <PROVIDER> the type parameter
- * @param <ENTITY>   the type parameter
- * @param <PAYLOAD>  the type parameter
+ * @param <E> the Entity type
+ * @param <S> the Source Provider type
+ * @param <P> the Payload type
  * @author Pierre Adam
  * @since 21.03.01
  */
-public abstract class SimplePlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Payload> implements PlayDataTables<ENTITY, PROVIDER, PAYLOAD> {
+public abstract class SimplePlayDataTables<E, S, P extends Payload> implements PlayDataTables<E, S, P> {
 
     /**
      * The potential prefixes of the getter in the target classes.
@@ -80,40 +80,40 @@ public abstract class SimplePlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Pay
     /**
      * The Entity class.
      */
-    protected final Class<ENTITY> entityClass;
+    protected final Class<E> entityClass;
 
     /**
      * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
      * If not set, the answer will try to reach the variable on the given T class.
      */
-    private final Map<String, BiFunction<ENTITY, Context<PAYLOAD>, String>> fieldsDisplaySupplier;
+    private final Map<String, BiFunction<E, Context<P>, String>> fieldsDisplaySupplier;
 
     /**
      * The fields search handler. If set for a given field, the handler will be called when searching on that field.
      * If not set, the search will have no effect.
      */
-    private final Map<String, BiConsumer<PROVIDER, String>> fieldsSearchHandler;
+    private final Map<String, BiConsumer<S, String>> fieldsSearchHandler;
 
     /**
      * The fields order handler. If set for a given field, the handler will be called when ordering on that field.
      * If not set, the search will be set to the name of the field followed by "ASC" or "DESC"
      */
-    private final Map<String, BiConsumer<PROVIDER, OrderEnum>> fieldsOrderHandler;
+    private final Map<String, BiConsumer<S, OrderEnum>> fieldsOrderHandler;
 
     /**
      * The initial provider supplier allows you to create your own initial provider.
      */
-    private final Supplier<PROVIDER> providerSupplier;
+    private final Supplier<S> providerSupplier;
 
     /**
      * The global search supplier. If set, the handler will be called when a search not specific to a field is required.
      */
-    private BiConsumer<PROVIDER, String> globalSearchHandler;
+    private BiConsumer<S, String> globalSearchHandler;
 
     /**
      * Initialize the provider object if needed. Is called on each forged request.
      */
-    private Consumer<PROVIDER> initProviderConsumer;
+    private Consumer<S> initProviderConsumer;
 
     /**
      * Instantiates a new A play data tables.
@@ -122,7 +122,7 @@ public abstract class SimplePlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Pay
      * @param messagesApi      the messages api
      * @param providerSupplier the query supplier
      */
-    public SimplePlayDataTables(final Class<ENTITY> entityClass, final MessagesApi messagesApi, final Supplier<PROVIDER> providerSupplier) {
+    public SimplePlayDataTables(final Class<E> entityClass, final MessagesApi messagesApi, final Supplier<S> providerSupplier) {
         this.logger = LoggerFactory.getLogger(this.getClass());
         this.entityClass = entityClass;
         this.messagesApi = messagesApi;
@@ -135,42 +135,42 @@ public abstract class SimplePlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Pay
     }
 
     @Override
-    public void setInitProviderConsumer(final Consumer<PROVIDER> initQueryConsumer) {
+    public void setInitProviderConsumer(final Consumer<S> initQueryConsumer) {
         this.initProviderConsumer = initQueryConsumer;
     }
 
     @Override
-    public void setFieldDisplaySupplier(final String field, final Function<ENTITY, String> fieldSupplier) {
+    public void setFieldDisplaySupplier(final String field, final Function<E, String> fieldSupplier) {
         this.fieldsDisplaySupplier.put(field, (entity, request) -> fieldSupplier.apply(entity));
     }
 
     @Override
-    public void setFieldDisplaySupplier(final String field, final BiFunction<ENTITY, Context<PAYLOAD>, String> fieldSupplier) {
+    public void setFieldDisplaySupplier(final String field, final BiFunction<E, Context<P>, String> fieldSupplier) {
         this.fieldsDisplaySupplier.put(field, fieldSupplier);
     }
 
     @Override
-    public void setFieldDisplayHtmlSupplier(final String field, final Function<ENTITY, Html> fieldSupplier) {
+    public void setFieldDisplayHtmlSupplier(final String field, final Function<E, Html> fieldSupplier) {
         this.fieldsDisplaySupplier.put(field, (t, request) -> fieldSupplier.apply(t).body());
     }
 
     @Override
-    public void setFieldDisplayHtmlSupplier(final String field, final BiFunction<ENTITY, Context<PAYLOAD>, Html> fieldSupplier) {
+    public void setFieldDisplayHtmlSupplier(final String field, final BiFunction<E, Context<P>, Html> fieldSupplier) {
         this.fieldsDisplaySupplier.put(field, (t, request) -> fieldSupplier.apply(t, request).body());
     }
 
     @Override
-    public void setSearchHandler(final String field, final BiConsumer<PROVIDER, String> searchHandler) {
+    public void setSearchHandler(final String field, final BiConsumer<S, String> searchHandler) {
         this.fieldsSearchHandler.put(field, searchHandler);
     }
 
     @Override
-    public void setOrderHandler(final String field, final BiConsumer<PROVIDER, OrderEnum> orderHandler) {
+    public void setOrderHandler(final String field, final BiConsumer<S, OrderEnum> orderHandler) {
         this.fieldsOrderHandler.put(field, orderHandler);
     }
 
     @Override
-    public void setGlobalSearchHandler(final BiConsumer<PROVIDER, String> globalSearchHandler) {
+    public void setGlobalSearchHandler(final BiConsumer<S, String> globalSearchHandler) {
         this.globalSearchHandler = globalSearchHandler;
     }
 
@@ -180,22 +180,22 @@ public abstract class SimplePlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Pay
     }
 
     @Override
-    public JsonNode getAjaxResult(final Http.Request request, final Parameters parameters, final PAYLOAD suppliedPayload) {
+    public JsonNode getAjaxResult(final Http.Request request, final Parameters parameters, final P suppliedPayload) {
         // Prepare data from the parameters and prepare the answer.
         final Map<Integer, Column> indexedColumns = parameters.getIndexedColumns();
         final AjaxResult result = new AjaxResult(parameters.getDraw());
-        final PAYLOAD payload = suppliedPayload == null ? this.getDefaultPayload() : suppliedPayload;
+        final P payload = suppliedPayload == null ? this.getDefaultPayload() : suppliedPayload;
 
-        final PROVIDER provider = this.internalForgeInitialProvider(this.providerSupplier);
+        final S provider = this.internalForgeInitialProvider(this.providerSupplier);
 
         if (this.initProviderConsumer != null) {
             this.initProviderConsumer.accept(provider);
         }
 
         //final DataSource<ENTITY> source = this.getFromSource(PROVIDER, this.globalSearchHandler, this.fieldsSearchHandler, this.fieldsOrderHandler, parameters, payload);
-        final DataSource<ENTITY> source = this.processProvider(provider, payload, parameters);
+        final DataSource<E> source = this.processProvider(provider, payload, parameters);
 
-        for (final ENTITY entity : source.getEntities()) {
+        for (final E entity : source.getEntities()) {
             result.getData().add(this.objectToArrayNode(request, entity, indexedColumns, payload));
         }
 
@@ -205,7 +205,15 @@ public abstract class SimplePlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Pay
         return Json.toJson(result);
     }
 
-    protected DataSource<ENTITY> processProvider(final PROVIDER provider, final PAYLOAD payload, final Parameters parameters) {
+    /**
+     * Process provider data source.
+     *
+     * @param provider   the provider
+     * @param payload    the payload
+     * @param parameters the parameters
+     * @return the data source
+     */
+    protected DataSource<E> processProvider(final S provider, final P payload, final Parameters parameters) {
         // Set the pagination on the provider.
         this.setPagination(provider, parameters.getStart(), parameters.getLength());
 
@@ -254,21 +262,77 @@ public abstract class SimplePlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Pay
         return this.dataSourceFromProvider(provider, payload);
     }
 
-    protected abstract void setPagination(final PROVIDER provider, int startElement, int numberOfElement);
+    /**
+     * Sets pagination.
+     *
+     * @param provider        the provider
+     * @param startElement    the start element
+     * @param numberOfElement the number of element
+     */
+    protected abstract void setPagination(final S provider, int startElement, int numberOfElement);
 
-    protected abstract void fallbackOrderHandler(final PROVIDER provider, String columnName, OrderEnum order);
+    /**
+     * Fallback order handler.
+     *
+     * @param provider   the provider
+     * @param columnName the column name
+     * @param order      the order
+     */
+    protected abstract void fallbackOrderHandler(final S provider, String columnName, OrderEnum order);
 
-    protected abstract void fallbackSearchHandler(PROVIDER provider, String columnName, String value);
+    /**
+     * Fallback search handler.
+     *
+     * @param provider   the provider
+     * @param columnName the column name
+     * @param value      the value
+     */
+    protected abstract void fallbackSearchHandler(S provider, String columnName, String value);
 
-    protected abstract DataSource<ENTITY> dataSourceFromProvider(final PROVIDER provider, final PAYLOAD payload);
+    /**
+     * Data source from provider data source.
+     *
+     * @param provider the provider
+     * @param payload  the payload
+     * @return the data source
+     */
+    protected abstract DataSource<E> dataSourceFromProvider(final S provider, final P payload);
 
-    protected abstract void preSearchHook(final PROVIDER provider, final PAYLOAD payload, final Parameters parameters);
+    /**
+     * Pre search hook.
+     *
+     * @param provider   the provider
+     * @param payload    the payload
+     * @param parameters the parameters
+     */
+    protected abstract void preSearchHook(final S provider, final P payload, final Parameters parameters);
 
-    protected abstract void postSearchHook(final PROVIDER provider, final PAYLOAD payload, final Parameters parameters);
+    /**
+     * Post search hook.
+     *
+     * @param provider   the provider
+     * @param payload    the payload
+     * @param parameters the parameters
+     */
+    protected abstract void postSearchHook(final S provider, final P payload, final Parameters parameters);
 
-    protected abstract void preOrderHook(final PROVIDER provider, final PAYLOAD payload, final Parameters parameters);
+    /**
+     * Pre order hook.
+     *
+     * @param provider   the provider
+     * @param payload    the payload
+     * @param parameters the parameters
+     */
+    protected abstract void preOrderHook(final S provider, final P payload, final Parameters parameters);
 
-    protected abstract void postOrderHook(final PROVIDER provider, final PAYLOAD payload, final Parameters parameters);
+    /**
+     * Post order hook.
+     *
+     * @param provider   the provider
+     * @param payload    the payload
+     * @param parameters the parameters
+     */
+    protected abstract void postOrderHook(final S provider, final P payload, final Parameters parameters);
 
     /**
      * Internal forge initial query query.
@@ -276,7 +340,7 @@ public abstract class SimplePlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Pay
      * @param initialProviderSupplier the initial query supplier
      * @return the query
      */
-    protected PROVIDER internalForgeInitialProvider(final Supplier<PROVIDER> initialProviderSupplier) {
+    protected S internalForgeInitialProvider(final Supplier<S> initialProviderSupplier) {
         return initialProviderSupplier.get();
     }
 
@@ -289,7 +353,7 @@ public abstract class SimplePlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Pay
      * @param payload        the payload
      * @return the array node
      */
-    protected JsonNode objectToArrayNode(final Http.Request request, final ENTITY entity, final Map<Integer, Column> indexedColumns, final PAYLOAD payload) {
+    protected JsonNode objectToArrayNode(final Http.Request request, final E entity, final Map<Integer, Column> indexedColumns, final P payload) {
         final ArrayNode data = Json.newArray();
 
         for (int i = 0; i < indexedColumns.size(); i++) {
@@ -346,7 +410,7 @@ public abstract class SimplePlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Pay
      *
      * @return the default payload
      */
-    protected abstract PAYLOAD getDefaultPayload();
+    protected abstract P getDefaultPayload();
 
     /**
      * Add an object to a Json ArrayNode trying to solve the type.

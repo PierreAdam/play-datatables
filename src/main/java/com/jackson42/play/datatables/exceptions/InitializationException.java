@@ -22,38 +22,48 @@
  * SOFTWARE.
  */
 
-package com.jackson42.play.datatables.interfaces;
-
-import play.i18n.Messages;
-import play.mvc.Http;
+package com.jackson42.play.datatables.exceptions;
 
 /**
- * PdtContext.
+ * InitializationException.
  *
- * @param <P> the type parameter
  * @author Pierre Adam
- * @since 21.03.01
+ * @since 21.03.17
  */
-public interface Context<P extends Payload> {
+public class InitializationException extends RuntimeException {
 
     /**
-     * Gets request.
-     *
-     * @return the request
+     * Instantiates a new Initialization exception.
      */
-    Http.Request getRequest();
+    public InitializationException() {
+        super();
+    }
 
     /**
-     * Gets an instance of messages.
+     * Instantiates a new Initialization exception.
      *
-     * @return an instance of messages
+     * @param message the message
      */
-    Messages getMessages();
+    public InitializationException(String message) {
+        super(message);
+    }
 
     /**
-     * Gets payload.
+     * Instantiates a new Initialization exception.
      *
-     * @return the payload
+     * @param message the message
+     * @param cause   the cause
      */
-    P getPayload();
+    public InitializationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    /**
+     * Instantiates a new Initialization exception.
+     *
+     * @param cause the cause
+     */
+    public InitializationException(Throwable cause) {
+        super(cause);
+    }
 }

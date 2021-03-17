@@ -53,10 +53,12 @@ public class MyDataTable extends SimplePlayDataTables<PersonEntity, DummyProvide
 
     @Override
     protected void fallbackOrderHandler(final DummyProvider dummyProvider, final String columnName, final OrderEnum order) {
+        // No fallback when ordering
     }
 
     @Override
     protected void fallbackSearchHandler(final DummyProvider dummyProvider, final String columnName, final String value) {
+        // No fallback when searching
     }
 
     @Override
@@ -67,18 +69,22 @@ public class MyDataTable extends SimplePlayDataTables<PersonEntity, DummyProvide
 
     @Override
     protected void preSearchHook(final DummyProvider dummyProvider, final Payload payload, final Parameters parameters) {
+        // No pre-search hook
     }
 
     @Override
     protected void postSearchHook(final DummyProvider dummyProvider, final Payload payload, final Parameters parameters) {
+        // No post-search hook
     }
 
     @Override
     protected void preOrderHook(final DummyProvider dummyProvider, final Payload payload, final Parameters parameters) {
+        // No pre-order hook
     }
 
     @Override
     protected void postOrderHook(final DummyProvider dummyProvider, final Payload payload, final Parameters parameters) {
+        // No post-order hook
     }
 
     @Override

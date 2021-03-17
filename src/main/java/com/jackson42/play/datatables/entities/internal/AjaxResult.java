@@ -38,22 +38,22 @@ public class AjaxResult {
     /**
      * The Draw.
      */
-    final int draw;
+    private final int draw;
 
     /**
      * The Records total.
      */
-    long recordsTotal;
+    private long recordsTotal;
 
     /**
      * The Records filtered.
      */
-    long recordsFiltered;
+    private long recordsFiltered;
 
     /**
      * The Data.
      */
-    ArrayNode data;
+    private final ArrayNode data;
 
     /**
      * Instantiates a new Ajax result.

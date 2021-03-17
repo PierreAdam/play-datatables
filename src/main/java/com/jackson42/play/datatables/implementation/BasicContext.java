@@ -24,6 +24,7 @@
 
 package com.jackson42.play.datatables.implementation;
 
+import com.jackson42.play.datatables.exceptions.InitializationException;
 import com.jackson42.play.datatables.interfaces.Context;
 import com.jackson42.play.datatables.interfaces.Payload;
 import play.i18n.Messages;
@@ -33,11 +34,11 @@ import play.mvc.Http;
 /**
  * Context.
  *
- * @param <PAYLOAD> the type of the payload
+ * @param <P> the type of the payload
  * @author Pierre Adam
  * @since 21.03.01
  */
-public class BasicContext<PAYLOAD extends Payload> implements Context<PAYLOAD> {
+public class BasicContext<P extends Payload> implements Context<P> {
 
     /**
      * The current request.
@@ -52,7 +53,7 @@ public class BasicContext<PAYLOAD extends Payload> implements Context<PAYLOAD> {
     /**
      * The current payload.
      */
-    private final PAYLOAD payload;
+    private final P payload;
 
     /**
      * Instantiates a new Basic context.
@@ -61,7 +62,7 @@ public class BasicContext<PAYLOAD extends Payload> implements Context<PAYLOAD> {
      * @param messagesApi the messages api
      * @param payload     the payload
      */
-    public BasicContext(final Http.Request request, final MessagesApi messagesApi, final PAYLOAD payload) {
+    public BasicContext(final Http.Request request, final MessagesApi messagesApi, final P payload) {
         this.request = request;
         this.messages = messagesApi == null ? null : messagesApi.preferred(request);
         this.payload = payload;
@@ -75,13 +76,13 @@ public class BasicContext<PAYLOAD extends Payload> implements Context<PAYLOAD> {
     @Override
     public Messages getMessages() {
         if (this.messages == null) {
-            throw new RuntimeException("Unable to resolve the Messages. MessagesApi is missing !");
+            throw new InitializationException("Unable to resolve the Messages. MessagesApi is missing !");
         }
         return this.messages;
     }
 
     @Override
-    public PAYLOAD getPayload() {
+    public P getPayload() {
         return this.payload;
     }
 }

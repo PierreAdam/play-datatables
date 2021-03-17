@@ -11,7 +11,8 @@ implements some data providers.
 
 List of the current data providers :
 
-- [play-ebean-datatables](https://github.com/PierreAdam/play-ebean-datatables) - Directly query your database from DataTables
+- [play-ebean-datatables](https://github.com/PierreAdam/play-ebean-datatables) Directly query your database from DataTables
+- [play-httpquery-datatables](https://github.com/PierreAdam/play-httpquery-datatables) Allow you to use an API as a source for DataTables
 
 *****
 
@@ -23,7 +24,7 @@ $> mvn package
 $> mvn install
 ```
 
-#### Deployment
+### Deployment
 
 ```shell
 $> mvn verify

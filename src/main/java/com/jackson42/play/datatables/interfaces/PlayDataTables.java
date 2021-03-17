@@ -38,20 +38,20 @@ import java.util.function.Function;
 /**
  * PlayDataTables.
  *
- * @param <PROVIDER> the type parameter
- * @param <ENTITY>   the type parameter
- * @param <PAYLOAD>  the type parameter
+ * @param <E> the Entity type
+ * @param <S> the Source Provider type
+ * @param <P> the Payload type
  * @author Pierre Adam
  * @since 21.03.01
  */
-public interface PlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Payload> {
+public interface PlayDataTables<E, S, P extends Payload> {
 
     /**
      * The initial where condition. Is called on each forged request and should not contains orders or weird things.
      *
      * @param initialQuery the consumer that allows to set the initial query.
      */
-    void setInitProviderConsumer(final Consumer<PROVIDER> initialQuery);
+    void setInitProviderConsumer(final Consumer<S> initialQuery);
 
     /**
      * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
@@ -60,7 +60,7 @@ public interface PlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Payload> {
      * @param field         the field name
      * @param fieldSupplier the field display supplier
      */
-    void setFieldDisplaySupplier(final String field, final Function<ENTITY, String> fieldSupplier);
+    void setFieldDisplaySupplier(final String field, final Function<E, String> fieldSupplier);
 
     /**
      * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
@@ -69,7 +69,7 @@ public interface PlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Payload> {
      * @param field         the field name
      * @param fieldSupplier the field display supplier
      */
-    void setFieldDisplaySupplier(final String field, final BiFunction<ENTITY, Context<PAYLOAD>, String> fieldSupplier);
+    void setFieldDisplaySupplier(final String field, final BiFunction<E, Context<P>, String> fieldSupplier);
 
     /**
      * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
@@ -78,7 +78,7 @@ public interface PlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Payload> {
      * @param field         the field name
      * @param fieldSupplier the field display supplier
      */
-    void setFieldDisplayHtmlSupplier(final String field, final Function<ENTITY, Html> fieldSupplier);
+    void setFieldDisplayHtmlSupplier(final String field, final Function<E, Html> fieldSupplier);
 
     /**
      * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
@@ -87,7 +87,7 @@ public interface PlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Payload> {
      * @param field         the field name
      * @param fieldSupplier the field display supplier
      */
-    void setFieldDisplayHtmlSupplier(final String field, final BiFunction<ENTITY, Context<PAYLOAD>, Html> fieldSupplier);
+    void setFieldDisplayHtmlSupplier(final String field, final BiFunction<E, Context<P>, Html> fieldSupplier);
 
     /**
      * The fields search handler. If set for a given field, the handler will be called when searching on that field.
@@ -96,7 +96,7 @@ public interface PlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Payload> {
      * @param field         the field name
      * @param searchHandler the field search handler
      */
-    void setSearchHandler(final String field, final BiConsumer<PROVIDER, String> searchHandler);
+    void setSearchHandler(final String field, final BiConsumer<S, String> searchHandler);
 
     /**
      * The fields order handler. If set for a given field, the handler will be called when ordering on that field.
@@ -105,14 +105,14 @@ public interface PlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Payload> {
      * @param field        the field name
      * @param orderHandler the field order handler
      */
-    void setOrderHandler(final String field, final BiConsumer<PROVIDER, OrderEnum> orderHandler);
+    void setOrderHandler(final String field, final BiConsumer<S, OrderEnum> orderHandler);
 
     /**
      * The global search supplier. If set, the handler will be called when a search not specific to a field is required.
      *
      * @param globalSearchHandler the global search handler
      */
-    void setGlobalSearchHandler(final BiConsumer<PROVIDER, String> globalSearchHandler);
+    void setGlobalSearchHandler(final BiConsumer<S, String> globalSearchHandler);
 
     /**
      * Build the Ajax result in the form of a Json ObjectNode. Parameters SHOULD come from a form.
@@ -123,7 +123,7 @@ public interface PlayDataTables<ENTITY, PROVIDER, PAYLOAD extends Payload> {
      * @return the Json ObjectNode
      * @see Parameters
      */
-    JsonNode getAjaxResult(final Http.Request request, final Parameters parameters, final PAYLOAD payload);
+    JsonNode getAjaxResult(final Http.Request request, final Parameters parameters, final P payload);
 
     /**
      * Build the Ajax result in the form of a Json ObjectNode. Parameters SHOULD come from a form.

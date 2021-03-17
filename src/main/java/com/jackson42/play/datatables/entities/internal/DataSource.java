@@ -29,26 +29,26 @@ import java.util.List;
 /**
  * DataSource.
  *
- * @param <ENTITY> the type parameter
+ * @param <E> the Entity type
  * @author Pierre Adam
  * @since 21.03.01
  */
-public class DataSource<ENTITY> {
+public class DataSource<E> {
 
     /**
      * The Entities.
      */
-    List<ENTITY> entities;
+    private List<E> entities;
 
     /**
      * The Records total.
      */
-    long recordsTotal;
+    private long recordsTotal;
 
     /**
      * The Records filtered.
      */
-    long recordsFiltered;
+    private long recordsFiltered;
 
     /**
      * Instantiates a new Data source.
@@ -63,7 +63,7 @@ public class DataSource<ENTITY> {
      * @param recordsFiltered the records filtered
      * @param entities        the entities
      */
-    public DataSource(final long recordsTotal, final long recordsFiltered, final List<ENTITY> entities) {
+    public DataSource(final long recordsTotal, final long recordsFiltered, final List<E> entities) {
         this.entities = entities;
         this.recordsTotal = recordsTotal;
         this.recordsFiltered = recordsFiltered;
@@ -74,7 +74,7 @@ public class DataSource<ENTITY> {
      *
      * @return the entities
      */
-    public List<ENTITY> getEntities() {
+    public List<E> getEntities() {
         return this.entities;
     }
 
@@ -83,7 +83,7 @@ public class DataSource<ENTITY> {
      *
      * @param entities the entities
      */
-    public void setEntities(final List<ENTITY> entities) {
+    public void setEntities(final List<E> entities) {
         this.entities = entities;
     }
 
