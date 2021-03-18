@@ -61,12 +61,6 @@ public class FieldBehavior<E, S, P extends Payload> {
     private BiConsumer<S, OrderEnum> orderHandler;
 
     /**
-     * Instantiates a new Field behavior.
-     */
-    public FieldBehavior() {
-    }
-
-    /**
      * Gets display supplier.
      *
      * @return the display supplier
