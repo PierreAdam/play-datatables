@@ -7,10 +7,7 @@ cache:
 jdk:
   - openjdk8
 
-install:
-  - mvn clean
-  - mvn compile
-
 script:
+  - mvn compile
   - mvn test
   - mvn package
