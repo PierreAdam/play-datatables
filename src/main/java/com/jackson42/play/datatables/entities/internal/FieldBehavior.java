@@ -35,9 +35,9 @@ import java.util.function.BiFunction;
 /**
  * FieldBehavior.
  *
- * @param <E> the type parameter
- * @param <S> the type parameter
- * @param <P> the type parameter
+ * @param <E> the Entity type
+ * @param <S> the Source Provider type
+ * @param <P> the Payload type
  * @author Pierre Adam
  * @since 21.03.18
  */
@@ -72,15 +72,16 @@ public class FieldBehavior<E, S, P extends Payload> {
      * @return the display supplier
      */
     public Optional<BiFunction<E, Context<P>, String>> getDisplaySupplier() {
-        return Optional.of(displaySupplier);
+        return Optional.of(this.displaySupplier);
     }
 
     /**
      * Sets display supplier.
      *
      * @param displaySupplier the display supplier
+     * @return the display supplier
      */
-    public FieldBehavior<E, S, P> setDisplaySupplier(BiFunction<E, Context<P>, String> displaySupplier) {
+    public FieldBehavior<E, S, P> setDisplaySupplier(final BiFunction<E, Context<P>, String> displaySupplier) {
         this.displaySupplier = displaySupplier;
         return this;
     }
@@ -91,15 +92,16 @@ public class FieldBehavior<E, S, P extends Payload> {
      * @return the search handler
      */
     public Optional<BiConsumer<S, String>> getSearchHandler() {
-        return Optional.of(searchHandler);
+        return Optional.of(this.searchHandler);
     }
 
     /**
      * Sets search handler.
      *
      * @param searchHandler the search handler
+     * @return the search handler
      */
-    public FieldBehavior<E, S, P> setSearchHandler(BiConsumer<S, String> searchHandler) {
+    public FieldBehavior<E, S, P> setSearchHandler(final BiConsumer<S, String> searchHandler) {
         this.searchHandler = searchHandler;
         return this;
     }
@@ -110,15 +112,16 @@ public class FieldBehavior<E, S, P extends Payload> {
      * @return the order handler
      */
     public Optional<BiConsumer<S, OrderEnum>> getOrderHandler() {
-        return Optional.of(orderHandler);
+        return Optional.of(this.orderHandler);
     }
 
     /**
      * Sets order handler.
      *
      * @param orderHandler the order handler
+     * @return the order handler
      */
-    public FieldBehavior<E, S, P> setOrderHandler(BiConsumer<S, OrderEnum> orderHandler) {
+    public FieldBehavior<E, S, P> setOrderHandler(final BiConsumer<S, OrderEnum> orderHandler) {
         this.orderHandler = orderHandler;
         return this;
     }

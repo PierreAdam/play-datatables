@@ -32,6 +32,9 @@ import com.jackson42.play.datatables.interfaces.Payload;
 /**
  * DataTablesHooks.
  *
+ * @param <E> the Entity type
+ * @param <S> the Source Provider type
+ * @param <P> the Payload type
  * @author Pierre Adam
  * @since 21.03.18
  */
@@ -69,7 +72,7 @@ public abstract class CustomizableDataTables<E, S, P extends Payload> {
      * @param columnName the column name
      * @param order      the order
      */
-    protected void fallbackOrderHandler(final S provider, String columnName, OrderEnum order) {
+    protected void fallbackOrderHandler(final S provider, final String columnName, final OrderEnum order) {
         // Default behavior does nothing
     }
 
@@ -80,7 +83,7 @@ public abstract class CustomizableDataTables<E, S, P extends Payload> {
      * @param columnName the column name
      * @param value      the value
      */
-    protected void fallbackSearchHandler(S provider, String columnName, String value) {
+    protected void fallbackSearchHandler(final S provider, final String columnName, final String value) {
         // Default behavior does nothing
     }
 
