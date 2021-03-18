@@ -26,6 +26,7 @@ package com.jackson42.play.datatables.interfaces;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.jackson42.play.datatables.entities.Parameters;
+import com.jackson42.play.datatables.entities.internal.FieldBehavior;
 import com.jackson42.play.datatables.enumerations.OrderEnum;
 import play.mvc.Http;
 import play.twirl.api.Html;
@@ -57,55 +58,67 @@ public interface PlayDataTables<E, S, P extends Payload> {
      * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
      * If not set, the answer will try to reach the variable on the given T class.
      *
-     * @param field         the field name
+     * @param fieldName     the field name
      * @param fieldSupplier the field display supplier
      */
-    void setFieldDisplaySupplier(final String field, final Function<E, String> fieldSupplier);
+    default void setFieldDisplaySupplier(final String fieldName, final Function<E, String> fieldSupplier) {
+        this.field(fieldName).setDisplaySupplier((entity, request) -> fieldSupplier.apply(entity));
+    }
 
     /**
      * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
      * If not set, the answer will try to reach the variable on the given T class.
      *
-     * @param field         the field name
+     * @param fieldName     the field name
      * @param fieldSupplier the field display supplier
      */
-    void setFieldDisplaySupplier(final String field, final BiFunction<E, Context<P>, String> fieldSupplier);
+    default void setFieldDisplaySupplier(final String fieldName, final BiFunction<E, Context<P>, String> fieldSupplier) {
+        this.field(fieldName).setDisplaySupplier(fieldSupplier);
+    }
 
     /**
      * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
      * If not set, the answer will try to reach the variable on the given T class.
      *
-     * @param field         the field name
+     * @param fieldName     the field name
      * @param fieldSupplier the field display supplier
      */
-    void setFieldDisplayHtmlSupplier(final String field, final Function<E, Html> fieldSupplier);
+    default void setFieldDisplayHtmlSupplier(final String fieldName, final Function<E, Html> fieldSupplier) {
+        this.field(fieldName).setDisplaySupplier((entity, request) -> fieldSupplier.apply(entity).body());
+    }
 
     /**
      * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
      * If not set, the answer will try to reach the variable on the given T class.
      *
-     * @param field         the field name
+     * @param fieldName     the field name
      * @param fieldSupplier the field display supplier
      */
-    void setFieldDisplayHtmlSupplier(final String field, final BiFunction<E, Context<P>, Html> fieldSupplier);
+    default void setFieldDisplayHtmlSupplier(final String fieldName, final BiFunction<E, Context<P>, Html> fieldSupplier) {
+        this.field(fieldName).setDisplaySupplier((entity, request) -> fieldSupplier.apply(entity, request).body());
+    }
 
     /**
      * The fields search handler. If set for a given field, the handler will be called when searching on that field.
      * If not set, the search will have no effect.
      *
-     * @param field         the field name
+     * @param fieldName     the field name
      * @param searchHandler the field search handler
      */
-    void setSearchHandler(final String field, final BiConsumer<S, String> searchHandler);
+    default void setSearchHandler(final String fieldName, final BiConsumer<S, String> searchHandler) {
+        this.field(fieldName).setSearchHandler(searchHandler);
+    }
 
     /**
      * The fields order handler. If set for a given field, the handler will be called when ordering on that field.
      * If not set, the search will be set to the name of the field followed by "ASC" or "DESC"
      *
-     * @param field        the field name
+     * @param fieldName    the field name
      * @param orderHandler the field order handler
      */
-    void setOrderHandler(final String field, final BiConsumer<S, OrderEnum> orderHandler);
+    default void setOrderHandler(final String fieldName, final BiConsumer<S, OrderEnum> orderHandler) {
+        this.field(fieldName).setOrderHandler(orderHandler);
+    }
 
     /**
      * The global search supplier. If set, the handler will be called when a search not specific to a field is required.
@@ -115,7 +128,7 @@ public interface PlayDataTables<E, S, P extends Payload> {
     void setGlobalSearchHandler(final BiConsumer<S, String> globalSearchHandler);
 
     /**
-     * Build the Ajax result in the form of a Json ObjectNode. Parameters SHOULD come from a form.
+     * Builds the Ajax result in the form of a Json ObjectNode. Parameters SHOULD come from a form.
      *
      * @param request    the request
      * @param parameters the parameters
@@ -126,12 +139,30 @@ public interface PlayDataTables<E, S, P extends Payload> {
     JsonNode getAjaxResult(final Http.Request request, final Parameters parameters, final P payload);
 
     /**
-     * Build the Ajax result in the form of a Json ObjectNode. Parameters SHOULD come from a form.
+     * Builds the Ajax result in the form of a Json ObjectNode. Parameters SHOULD come from a form.
      *
      * @param request    the request
      * @param parameters the parameters
      * @return the Json ObjectNode
      * @see Parameters
      */
-    JsonNode getAjaxResult(final Http.Request request, final Parameters parameters);
+    default JsonNode getAjaxResult(final Http.Request request, final Parameters parameters) {
+        return this.getAjaxResult(request, parameters, null);
+    }
+
+    /**
+     * Gets the field behavior.
+     *
+     * @param fieldName the field name
+     * @return the field behavior
+     */
+    FieldBehavior<E, S, P> field(final String fieldName);
+
+    /**
+     * Sets the field behavior.
+     *
+     * @param fieldName     the field name
+     * @param fieldBehavior the field behavior
+     */
+    void setField(final String fieldName, final FieldBehavior<E, S, P> fieldBehavior);
 }

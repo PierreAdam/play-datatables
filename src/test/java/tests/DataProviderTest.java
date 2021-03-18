@@ -43,6 +43,7 @@ import tools.ParametersHelper;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -104,6 +105,7 @@ public class DataProviderTest {
         this.myDataTable.setFieldDisplaySupplier("lastName", (entity, payloadContext) -> entity.getLastName());
         this.myDataTable.setFieldDisplaySupplier("title", (entity, payloadContext) -> entity.getTitle());
         this.myDataTable.setFieldDisplaySupplier("bloodGroup", (entity, payloadContext) -> entity.getBloodGroup());
+        this.myDataTable.setFieldDisplaySupplier("fullName", (entity, payloadContext) -> String.format("%s %s", entity.getFirstName(), entity.getLastName()));
     }
 
     /**

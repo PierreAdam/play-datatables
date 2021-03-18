@@ -24,9 +24,7 @@
 
 package dataprovider;
 
-import com.jackson42.play.datatables.entities.Parameters;
 import com.jackson42.play.datatables.entities.internal.DataSource;
-import com.jackson42.play.datatables.enumerations.OrderEnum;
 import com.jackson42.play.datatables.implementation.BasicPayload;
 import com.jackson42.play.datatables.implementation.SimplePlayDataTables;
 import com.jackson42.play.datatables.interfaces.Payload;
@@ -42,6 +40,11 @@ import java.util.List;
  */
 public class MyDataTable extends SimplePlayDataTables<PersonEntity, DummyProvider, Payload> {
 
+    /**
+     * Instantiates a new My data table.
+     *
+     * @param messagesApi the messages api
+     */
     public MyDataTable(final MessagesApi messagesApi) {
         super(PersonEntity.class, messagesApi, DummyProvider::new);
     }
@@ -52,39 +55,9 @@ public class MyDataTable extends SimplePlayDataTables<PersonEntity, DummyProvide
     }
 
     @Override
-    protected void fallbackOrderHandler(final DummyProvider dummyProvider, final String columnName, final OrderEnum order) {
-        // No fallback when ordering
-    }
-
-    @Override
-    protected void fallbackSearchHandler(final DummyProvider dummyProvider, final String columnName, final String value) {
-        // No fallback when searching
-    }
-
-    @Override
     protected DataSource<PersonEntity> dataSourceFromProvider(final DummyProvider dummyProvider, final Payload payload) {
         final List<PersonEntity> result = dummyProvider.getResult();
         return new DataSource<>(dummyProvider.getInitialSize(), result.size(), result);
-    }
-
-    @Override
-    protected void preSearchHook(final DummyProvider dummyProvider, final Payload payload, final Parameters parameters) {
-        // No pre-search hook
-    }
-
-    @Override
-    protected void postSearchHook(final DummyProvider dummyProvider, final Payload payload, final Parameters parameters) {
-        // No post-search hook
-    }
-
-    @Override
-    protected void preOrderHook(final DummyProvider dummyProvider, final Payload payload, final Parameters parameters) {
-        // No pre-order hook
-    }
-
-    @Override
-    protected void postOrderHook(final DummyProvider dummyProvider, final Payload payload, final Parameters parameters) {
-        // No post-order hook
     }
 
     @Override
