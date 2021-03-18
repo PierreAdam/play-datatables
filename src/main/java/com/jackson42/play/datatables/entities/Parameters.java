@@ -25,6 +25,7 @@
 package com.jackson42.play.datatables.entities;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +95,7 @@ public class Parameters {
      * @return the list of columns
      */
     public List<Column> getColumns() {
-        return this.columns;
+        return this.columns != null ? this.columns : new ArrayList<>();
     }
 
     /**
@@ -112,7 +113,7 @@ public class Parameters {
      * @return the list of ordering
      */
     public List<Order> getOrder() {
-        return this.order;
+        return this.order != null ? this.order : new ArrayList<>();
     }
 
     /**

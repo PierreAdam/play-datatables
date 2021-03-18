@@ -66,7 +66,7 @@ public class FieldBehavior<E, S, P extends Payload> {
      * @return the display supplier
      */
     public Optional<BiFunction<E, Context<P>, String>> getDisplaySupplier() {
-        return Optional.of(this.displaySupplier);
+        return Optional.ofNullable(this.displaySupplier);
     }
 
     /**
@@ -86,7 +86,7 @@ public class FieldBehavior<E, S, P extends Payload> {
      * @return the search handler
      */
     public Optional<BiConsumer<S, String>> getSearchHandler() {
-        return Optional.of(this.searchHandler);
+        return Optional.ofNullable(this.searchHandler);
     }
 
     /**
@@ -106,7 +106,7 @@ public class FieldBehavior<E, S, P extends Payload> {
      * @return the order handler
      */
     public Optional<BiConsumer<S, OrderEnum>> getOrderHandler() {
-        return Optional.of(this.orderHandler);
+        return Optional.ofNullable(this.orderHandler);
     }
 
     /**

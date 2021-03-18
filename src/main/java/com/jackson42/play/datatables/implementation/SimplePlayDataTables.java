@@ -27,7 +27,6 @@ package com.jackson42.play.datatables.implementation;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.jackson42.play.datatables.entities.Column;
-import com.jackson42.play.datatables.entities.Order;
 import com.jackson42.play.datatables.entities.Parameters;
 import com.jackson42.play.datatables.entities.internal.AjaxResult;
 import com.jackson42.play.datatables.entities.internal.DataSource;
@@ -223,18 +222,16 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
     private void applyOrder(final S provider, final Parameters parameters) {
         final Map<Integer, Column> indexedColumns = parameters.getIndexedColumns();
 
-        if (parameters.getOrder() != null) {
-            for (final Order order : parameters.getOrder()) {
-                final String columnName = indexedColumns.get(order.getColumn()).getName();
-                final Optional<BiConsumer<S, OrderEnum>> optionalOrderHandler = this.field(columnName).getOrderHandler();
+        parameters.getOrder().forEach(order -> {
+            final String columnName = indexedColumns.get(order.getColumn()).getName();
+            final Optional<BiConsumer<S, OrderEnum>> optionalOrderHandler = this.field(columnName).getOrderHandler();
 
-                if (optionalOrderHandler.isPresent()) {
-                    optionalOrderHandler.get().accept(provider, order.getOrder());
-                } else {
-                    this.fallbackOrderHandler(provider, columnName, order.getOrder());
-                }
+            if (optionalOrderHandler.isPresent()) {
+                optionalOrderHandler.get().accept(provider, order.getOrder());
+            } else {
+                this.fallbackOrderHandler(provider, columnName, order.getOrder());
             }
-        }
+        });
     }
 
     /**
