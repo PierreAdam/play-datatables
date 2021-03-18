@@ -43,10 +43,19 @@ public class DummyProvider {
      */
     public static final int SAMPLE_SIZE = 200;
 
+    /**
+     * The Start idx.
+     */
     private int startIdx;
 
+    /**
+     * The Number of elem.
+     */
     private int numberOfElem;
 
+    /**
+     * The Data.
+     */
     private List<PersonEntity> data;
 
     /**

@@ -34,12 +34,24 @@ import com.github.javafaker.Name;
  */
 public class PersonEntity {
 
+    /**
+     * The First name.
+     */
     private final String firstName;
 
+    /**
+     * The Last name.
+     */
     private final String lastName;
 
+    /**
+     * The Title.
+     */
     private final String title;
 
+    /**
+     * The Blood group.
+     */
     private final String bloodGroup;
 
     /**

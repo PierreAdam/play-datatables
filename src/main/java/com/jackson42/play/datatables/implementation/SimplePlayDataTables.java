@@ -31,6 +31,7 @@ import com.jackson42.play.datatables.entities.Order;
 import com.jackson42.play.datatables.entities.Parameters;
 import com.jackson42.play.datatables.entities.internal.AjaxResult;
 import com.jackson42.play.datatables.entities.internal.DataSource;
+import com.jackson42.play.datatables.entities.internal.FieldBehavior;
 import com.jackson42.play.datatables.enumerations.OrderEnum;
 import com.jackson42.play.datatables.interfaces.Context;
 import com.jackson42.play.datatables.interfaces.Payload;
@@ -42,14 +43,17 @@ import org.springframework.util.StringUtils;
 import play.i18n.MessagesApi;
 import play.libs.Json;
 import play.mvc.Http;
-import play.twirl.api.Html;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * APlayDataTables.
@@ -60,7 +64,7 @@ import java.util.function.*;
  * @author Pierre Adam
  * @since 21.03.01
  */
-public abstract class SimplePlayDataTables<E, S, P extends Payload> implements PlayDataTables<E, S, P> {
+public abstract class SimplePlayDataTables<E, S, P extends Payload> extends CustomizableDataTables<E, S, P> implements PlayDataTables<E, S, P> {
 
     /**
      * The potential prefixes of the getter in the target classes.
@@ -83,37 +87,25 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> implements P
     protected final Class<E> entityClass;
 
     /**
-     * The fields display suppliers. If set for a given field, the supplier will be called when forging the ajax response object.
-     * If not set, the answer will try to reach the variable on the given T class.
+     * The fields specific behavior.
+     * If set for a given field, the supplier, search handler or order handler might be used.
      */
-    private final Map<String, BiFunction<E, Context<P>, String>> fieldsDisplaySupplier;
-
-    /**
-     * The fields search handler. If set for a given field, the handler will be called when searching on that field.
-     * If not set, the search will have no effect.
-     */
-    private final Map<String, BiConsumer<S, String>> fieldsSearchHandler;
-
-    /**
-     * The fields order handler. If set for a given field, the handler will be called when ordering on that field.
-     * If not set, the search will be set to the name of the field followed by "ASC" or "DESC"
-     */
-    private final Map<String, BiConsumer<S, OrderEnum>> fieldsOrderHandler;
+    protected final Map<String, FieldBehavior<E, S, P>> fieldsBehavior;
 
     /**
      * The initial provider supplier allows you to create your own initial provider.
      */
-    private final Supplier<S> providerSupplier;
+    protected final Supplier<S> providerSupplier;
 
     /**
      * The global search supplier. If set, the handler will be called when a search not specific to a field is required.
      */
-    private BiConsumer<S, String> globalSearchHandler;
+    protected BiConsumer<S, String> globalSearchHandler;
 
     /**
      * Initialize the provider object if needed. Is called on each forged request.
      */
-    private Consumer<S> initProviderConsumer;
+    protected Consumer<S> initProviderConsumer;
 
     /**
      * Instantiates a new A play data tables.
@@ -128,9 +120,7 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> implements P
         this.messagesApi = messagesApi;
         this.providerSupplier = providerSupplier;
 
-        this.fieldsDisplaySupplier = new HashMap<>();
-        this.fieldsSearchHandler = new HashMap<>();
-        this.fieldsOrderHandler = new HashMap<>();
+        this.fieldsBehavior = new HashMap<>();
         this.globalSearchHandler = null;
     }
 
@@ -140,43 +130,8 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> implements P
     }
 
     @Override
-    public void setFieldDisplaySupplier(final String field, final Function<E, String> fieldSupplier) {
-        this.fieldsDisplaySupplier.put(field, (entity, request) -> fieldSupplier.apply(entity));
-    }
-
-    @Override
-    public void setFieldDisplaySupplier(final String field, final BiFunction<E, Context<P>, String> fieldSupplier) {
-        this.fieldsDisplaySupplier.put(field, fieldSupplier);
-    }
-
-    @Override
-    public void setFieldDisplayHtmlSupplier(final String field, final Function<E, Html> fieldSupplier) {
-        this.fieldsDisplaySupplier.put(field, (t, request) -> fieldSupplier.apply(t).body());
-    }
-
-    @Override
-    public void setFieldDisplayHtmlSupplier(final String field, final BiFunction<E, Context<P>, Html> fieldSupplier) {
-        this.fieldsDisplaySupplier.put(field, (t, request) -> fieldSupplier.apply(t, request).body());
-    }
-
-    @Override
-    public void setSearchHandler(final String field, final BiConsumer<S, String> searchHandler) {
-        this.fieldsSearchHandler.put(field, searchHandler);
-    }
-
-    @Override
-    public void setOrderHandler(final String field, final BiConsumer<S, OrderEnum> orderHandler) {
-        this.fieldsOrderHandler.put(field, orderHandler);
-    }
-
-    @Override
     public void setGlobalSearchHandler(final BiConsumer<S, String> globalSearchHandler) {
         this.globalSearchHandler = globalSearchHandler;
-    }
-
-    @Override
-    public JsonNode getAjaxResult(final Http.Request request, final Parameters parameters) {
-        return this.getAjaxResult(request, parameters, null);
     }
 
     @Override
@@ -192,7 +147,6 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> implements P
             this.initProviderConsumer.accept(provider);
         }
 
-        //final DataSource<ENTITY> source = this.getFromSource(PROVIDER, this.globalSearchHandler, this.fieldsSearchHandler, this.fieldsOrderHandler, parameters, payload);
         final DataSource<E> source = this.processProvider(provider, payload, parameters);
 
         for (final E entity : source.getEntities()) {
@@ -218,7 +172,23 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> implements P
         this.setPagination(provider, parameters.getStart(), parameters.getLength());
 
         this.preSearchHook(provider, payload, parameters);
+        this.applySearch(provider, parameters);
+        this.postSearchHook(provider, payload, parameters);
 
+        this.preOrderHook(provider, payload, parameters);
+        this.applyOrder(provider, parameters);
+        this.postOrderHook(provider, payload, parameters);
+
+        return this.dataSourceFromProvider(provider, payload);
+    }
+
+    /**
+     * Apply search.
+     *
+     * @param provider   the provider
+     * @param parameters the parameters
+     */
+    private void applySearch(final S provider, final Parameters parameters) {
         // Process global search.
         if (parameters.hasGlobalSearch()) {
             if (this.globalSearchHandler != null) {
@@ -229,110 +199,43 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> implements P
         }
 
         // Process Column search.
+        parameters.getColumns()
+                .stream()
+                .filter(column -> column != null && column.hasSearch())
+                .forEach(column -> {
+                    final String columnName = column.getName();
+                    final Optional<BiConsumer<S, String>> optionalSearchHandler = this.field(columnName).getSearchHandler();
+
+                    if (optionalSearchHandler.isPresent()) {
+                        optionalSearchHandler.get().accept(provider, column.getSearch().getValue());
+                    } else {
+                        this.fallbackSearchHandler(provider, columnName, column.getSearch().getValue());
+                    }
+                });
+    }
+
+    /**
+     * Apply order.
+     *
+     * @param provider   the provider
+     * @param parameters the parameters
+     */
+    private void applyOrder(final S provider, final Parameters parameters) {
         final Map<Integer, Column> indexedColumns = parameters.getIndexedColumns();
-        indexedColumns.forEach((idx, column) -> {
-            if (column == null || !column.hasSearch()) {
-                return;
-            }
-            final String columnName = column.getName();
-            if (this.fieldsSearchHandler.containsKey(columnName)) {
-                this.fieldsSearchHandler.get(column.getName()).accept(provider, column.getSearch().getValue());
-            } else {
-                this.fallbackSearchHandler(provider, columnName, column.getSearch().getValue());
-            }
-        });
-
-        this.postSearchHook(provider, payload, parameters);
-
-        this.preOrderHook(provider, payload, parameters);
 
         if (parameters.getOrder() != null) {
             for (final Order order : parameters.getOrder()) {
                 final String columnName = indexedColumns.get(order.getColumn()).getName();
-                if (this.fieldsOrderHandler.containsKey(columnName)) {
-                    this.fieldsOrderHandler.get(columnName).accept(provider, order.getOrder());
+                final Optional<BiConsumer<S, OrderEnum>> optionalOrderHandler = this.field(columnName).getOrderHandler();
+
+                if (optionalOrderHandler.isPresent()) {
+                    optionalOrderHandler.get().accept(provider, order.getOrder());
                 } else {
                     this.fallbackOrderHandler(provider, columnName, order.getOrder());
                 }
             }
         }
-
-        this.postOrderHook(provider, payload, parameters);
-
-        return this.dataSourceFromProvider(provider, payload);
     }
-
-    /**
-     * Sets pagination.
-     *
-     * @param provider        the provider
-     * @param startElement    the start element
-     * @param numberOfElement the number of element
-     */
-    protected abstract void setPagination(final S provider, int startElement, int numberOfElement);
-
-    /**
-     * Fallback order handler.
-     *
-     * @param provider   the provider
-     * @param columnName the column name
-     * @param order      the order
-     */
-    protected abstract void fallbackOrderHandler(final S provider, String columnName, OrderEnum order);
-
-    /**
-     * Fallback search handler.
-     *
-     * @param provider   the provider
-     * @param columnName the column name
-     * @param value      the value
-     */
-    protected abstract void fallbackSearchHandler(S provider, String columnName, String value);
-
-    /**
-     * Data source from provider data source.
-     *
-     * @param provider the provider
-     * @param payload  the payload
-     * @return the data source
-     */
-    protected abstract DataSource<E> dataSourceFromProvider(final S provider, final P payload);
-
-    /**
-     * Pre search hook.
-     *
-     * @param provider   the provider
-     * @param payload    the payload
-     * @param parameters the parameters
-     */
-    protected abstract void preSearchHook(final S provider, final P payload, final Parameters parameters);
-
-    /**
-     * Post search hook.
-     *
-     * @param provider   the provider
-     * @param payload    the payload
-     * @param parameters the parameters
-     */
-    protected abstract void postSearchHook(final S provider, final P payload, final Parameters parameters);
-
-    /**
-     * Pre order hook.
-     *
-     * @param provider   the provider
-     * @param payload    the payload
-     * @param parameters the parameters
-     */
-    protected abstract void preOrderHook(final S provider, final P payload, final Parameters parameters);
-
-    /**
-     * Post order hook.
-     *
-     * @param provider   the provider
-     * @param payload    the payload
-     * @param parameters the parameters
-     */
-    protected abstract void postOrderHook(final S provider, final P payload, final Parameters parameters);
 
     /**
      * Internal forge initial query query.
@@ -363,8 +266,9 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> implements P
                 continue;
             }
 
-            if (this.fieldsDisplaySupplier.containsKey(column.getName())) {
-                data.add(this.fieldsDisplaySupplier.get(column.getName()).apply(entity, new BasicContext<>(request, this.messagesApi, payload)));
+            final Optional<BiFunction<E, Context<P>, String>> optionalDisplaySupplier = this.field(column.getName()).getDisplaySupplier();
+            if (optionalDisplaySupplier.isPresent()) {
+                data.add(optionalDisplaySupplier.get().apply(entity, new BasicContext<>(request, this.messagesApi, payload)));
             } else {
                 final Method method = this.methodForColumn(column);
                 if (method == null) {
@@ -406,13 +310,6 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> implements P
     }
 
     /**
-     * Gets default payload.
-     *
-     * @return the default payload
-     */
-    protected abstract P getDefaultPayload();
-
-    /**
      * Add an object to a Json ArrayNode trying to solve the type.
      * If the object can't be solved, null is put on the array.
      *
@@ -448,5 +345,18 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> implements P
         } else {
             data.addNull();
         }
+    }
+
+    @Override
+    public FieldBehavior<E, S, P> field(final String fieldName) {
+        if (!this.fieldsBehavior.containsKey(fieldName)) {
+            this.fieldsBehavior.put(fieldName, new FieldBehavior<>());
+        }
+        return this.fieldsBehavior.get(fieldName);
+    }
+
+    @Override
+    public void setField(final String fieldName, final FieldBehavior<E, S, P> fieldBehavior) {
+        this.fieldsBehavior.put(fieldName, fieldBehavior);
     }
 }

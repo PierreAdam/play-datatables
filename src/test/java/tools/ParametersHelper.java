@@ -38,6 +38,11 @@ import java.util.List;
  */
 public class ParametersHelper {
 
+    /**
+     * Create for name entity parameters.
+     *
+     * @return the parameters
+     */
     public static Parameters createForNameEntity() {
         final Parameters parameters = new Parameters();
         final List<Column> columns = new ArrayList<>();
@@ -72,6 +77,14 @@ public class ParametersHelper {
             this.setName("bloodGroup");
             this.setSearcheable(true);
             this.setOrderable(true);
+        }});
+
+        // Computed field which is not on the entity by default.
+        columns.add(new Column() {{
+            this.setData(4);
+            this.setName("fullName");
+            this.setSearcheable(false);
+            this.setOrderable(false);
         }});
         
         return parameters;

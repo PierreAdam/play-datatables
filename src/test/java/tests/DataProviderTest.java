@@ -32,11 +32,7 @@ import com.jackson42.play.datatables.enumerations.OrderEnum;
 import dataprovider.DummyProvider;
 import dataprovider.MyDataTable;
 import dataprovider.PersonEntity;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.ParametersHelper;
@@ -104,6 +100,7 @@ public class DataProviderTest {
         this.myDataTable.setFieldDisplaySupplier("lastName", (entity, payloadContext) -> entity.getLastName());
         this.myDataTable.setFieldDisplaySupplier("title", (entity, payloadContext) -> entity.getTitle());
         this.myDataTable.setFieldDisplaySupplier("bloodGroup", (entity, payloadContext) -> entity.getBloodGroup());
+        this.myDataTable.setFieldDisplaySupplier("fullName", (entity, payloadContext) -> String.format("%s %s", entity.getFirstName(), entity.getLastName()));
     }
 
     /**
