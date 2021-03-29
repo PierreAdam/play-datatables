@@ -41,6 +41,11 @@ import java.util.Optional;
 public class DateTimeConverter extends ConverterToString<DateTime> {
 
     /**
+     * The constant DATETIME_FORMAT.
+     */
+    public static final TypedKey<String> DATETIME_FORMAT = TypedKey.create();
+
+    /**
      * Instantiates a new converter.
      */
     public DateTimeConverter() {
@@ -49,23 +54,12 @@ public class DateTimeConverter extends ConverterToString<DateTime> {
 
     @Override
     public String convert(final DateTime obj, final Context<Payload> context) {
-        final Optional<String> optionalFormat = context.getPayload().getOptional(Config.DATETIME_FORMAT);
+        final Optional<String> optionalFormat = context.getPayload().getOptional(DateTimeConverter.DATETIME_FORMAT);
 
         if (optionalFormat.isPresent()) {
             return obj.toString(optionalFormat.get());
         } else {
             return obj.toString("dd/MM/yyyy");
         }
-    }
-
-    /**
-     * The configuration class.
-     */
-    public static class Config {
-
-        /**
-         * The constant DATETIME_FORMAT.
-         */
-        public static final TypedKey<String> DATETIME_FORMAT = TypedKey.create();
     }
 }
