@@ -48,6 +48,11 @@ public class BasicContext<P extends Payload> implements Context<P> {
     /**
      * The instance of the preferred messages from the request.
      */
+    private final MessagesApi messagesApi;
+
+    /**
+     * The instance of the preferred messages from the request.
+     */
     private final Messages messages;
 
     /**
@@ -64,6 +69,7 @@ public class BasicContext<P extends Payload> implements Context<P> {
      */
     public BasicContext(final Http.Request request, final MessagesApi messagesApi, final P payload) {
         this.request = request;
+        this.messagesApi = messagesApi;
         this.messages = messagesApi == null ? null : messagesApi.preferred(request);
         this.payload = payload;
     }
@@ -88,6 +94,6 @@ public class BasicContext<P extends Payload> implements Context<P> {
 
     @Override
     public Context<Payload> asGeneric() {
-        return new BasicContext<Payload>(this.getRequest(), this.getMessages(), this.getPayload());
+        return new BasicContext<Payload>(this.request, this.messagesApi, this.payload);
     }
 }
