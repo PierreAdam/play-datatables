@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.jackson42.play.datatables.implementation;
+package com.jackson42.play.datatables.implementations;
 
 import com.jackson42.play.datatables.exceptions.InitializationException;
 import com.jackson42.play.datatables.interfaces.Context;
@@ -84,5 +84,10 @@ public class BasicContext<P extends Payload> implements Context<P> {
     @Override
     public P getPayload() {
         return this.payload;
+    }
+
+    @Override
+    public Context<Payload> asGeneric() {
+        return new BasicContext<Payload>(this.getRequest(), this.getMessages(), this.getPayload());
     }
 }

@@ -56,4 +56,11 @@ public interface Context<P extends Payload> {
      * @return the payload
      */
     P getPayload();
+
+    /**
+     * As generic context.
+     *
+     * @return the context
+     */
+    Context<Payload> asGeneric();
 }

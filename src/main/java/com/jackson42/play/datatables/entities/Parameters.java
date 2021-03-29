@@ -25,10 +25,7 @@
 package com.jackson42.play.datatables.entities;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * AjaxQueryForm.
@@ -199,5 +196,15 @@ public class Parameters {
                 this.put(column.getData(), column);
             }
         }};
+    }
+
+    /**
+     * Gets ordered columns.
+     *
+     * @return the ordered columns
+     */
+    public List<Column> getOrderedColumns() {
+        final TreeMap<Integer, Column> treeMap = new TreeMap<>(this.getIndexedColumns());
+        return new ArrayList<>(treeMap.values());
     }
 }

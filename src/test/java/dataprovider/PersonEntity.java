@@ -104,6 +104,6 @@ public class PersonEntity {
 
     @Override
     public String toString() {
-        return String.format("[%s, %s, %s, %s", this.getFirstName(), this.getLastName(), this.getTitle(), this.getBloodGroup());
+        return String.format("[%s, %s, %s, %s]", this.getFirstName(), this.getLastName(), this.getTitle(), this.getBloodGroup());
     }
 }

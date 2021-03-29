@@ -22,52 +22,30 @@
  * SOFTWARE.
  */
 
-package com.jackson42.play.datatables.implementation;
+package com.jackson42.play.datatables.converters.standards;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.jackson42.play.datatables.converters.Converter;
+import com.jackson42.play.datatables.interfaces.Context;
 import com.jackson42.play.datatables.interfaces.Payload;
-import play.libs.typedmap.TypedEntry;
-import play.libs.typedmap.TypedKey;
-import play.libs.typedmap.TypedMap;
-
-import java.util.Optional;
 
 /**
- * PlayDataTablesPayloadImpl.
+ * BooleanConverter.
  *
  * @author Pierre Adam
- * @since 21.03.01
+ * @since 21.03.29
  */
-public class BasicPayload implements Payload {
+public class BooleanConverter extends Converter<Boolean> {
 
     /**
-     * The Typed map.
+     * Instantiates a new converter.
      */
-    private TypedMap typedMap;
-
-    /**
-     * Instantiates a new Play data tables payload.
-     */
-    public BasicPayload() {
-        this.typedMap = TypedMap.create();
+    public BooleanConverter() {
+        super(Boolean.class);
     }
 
     @Override
-    public <T> void put(final TypedKey<T> key, final T value) {
-        this.typedMap = this.typedMap.put(key, value);
-    }
-
-    @Override
-    public <T> void putAll(final TypedEntry<?>... typedEntries) {
-        this.typedMap = this.typedMap.putAll(typedEntries);
-    }
-
-    @Override
-    public <T> T get(final TypedKey<T> key) {
-        return this.typedMap.get(key);
-    }
-
-    @Override
-    public <T> Optional<T> getOptional(final TypedKey<T> key) {
-        return this.typedMap.getOptional(key);
+    public void internalAddToArray(final ArrayNode array, final Boolean obj, final Context<Payload> context) {
+        array.add(obj);
     }
 }

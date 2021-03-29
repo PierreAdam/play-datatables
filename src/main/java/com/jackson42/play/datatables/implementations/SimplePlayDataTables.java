@@ -22,10 +22,12 @@
  * SOFTWARE.
  */
 
-package com.jackson42.play.datatables.implementation;
+package com.jackson42.play.datatables.implementations;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.jackson42.play.datatables.configs.PlayDataTablesConfig;
+import com.jackson42.play.datatables.converters.Converter;
 import com.jackson42.play.datatables.entities.Column;
 import com.jackson42.play.datatables.entities.Parameters;
 import com.jackson42.play.datatables.entities.internal.AjaxResult;
@@ -35,7 +37,6 @@ import com.jackson42.play.datatables.enumerations.OrderEnum;
 import com.jackson42.play.datatables.interfaces.Context;
 import com.jackson42.play.datatables.interfaces.Payload;
 import com.jackson42.play.datatables.interfaces.PlayDataTables;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -48,7 +49,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -92,6 +92,11 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
     protected final Map<String, FieldBehavior<E, S, P>> fieldsBehavior;
 
     /**
+     * The instance specific converters.
+     */
+    private final Map<Class<?>, Converter<?>> converters;
+
+    /**
      * The initial provider supplier allows you to create your own initial provider.
      */
     protected final Supplier<S> providerSupplier;
@@ -120,6 +125,7 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
         this.providerSupplier = providerSupplier;
 
         this.fieldsBehavior = new HashMap<>();
+        this.converters = new HashMap<>();
         this.globalSearchHandler = null;
     }
 
@@ -136,7 +142,6 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
     @Override
     public JsonNode getAjaxResult(final Http.Request request, final Parameters parameters, final P suppliedPayload) {
         // Prepare data from the parameters and prepare the answer.
-        final Map<Integer, Column> indexedColumns = parameters.getIndexedColumns();
         final AjaxResult result = new AjaxResult(parameters.getDraw());
         final P payload = suppliedPayload == null ? this.getDefaultPayload() : suppliedPayload;
 
@@ -149,7 +154,7 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
         final DataSource<E> source = this.processProvider(provider, payload, parameters);
 
         for (final E entity : source.getEntities()) {
-            result.getData().add(this.objectToArrayNode(request, entity, indexedColumns, payload));
+            result.getData().add(this.objectToArrayNode(request, entity, parameters, payload));
         }
 
         result.setRecordsTotal(source.getRecordsTotal());
@@ -247,41 +252,94 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
     /**
      * Convert an object to an Array node using the indexed columns.
      *
-     * @param request        the request
-     * @param entity         the object
-     * @param indexedColumns the indexed column
-     * @param payload        the payload
+     * @param request    the request
+     * @param entity     the object
+     * @param parameters the parameters
+     * @param payload    the payload
      * @return the array node
      */
-    protected JsonNode objectToArrayNode(final Http.Request request, final E entity, final Map<Integer, Column> indexedColumns, final P payload) {
+    protected JsonNode objectToArrayNode(final Http.Request request, final E entity, final Parameters parameters, final P payload) {
         final ArrayNode data = Json.newArray();
 
-        for (int i = 0; i < indexedColumns.size(); i++) {
-            final Column column = indexedColumns.get(i);
+        parameters.getOrderedColumns().forEach(column -> {
             if (column == null) {
                 data.addNull();
-                continue;
+            } else {
+                final Optional<BiFunction<E, Context<P>, String>> optionalDisplaySupplier = this.field(column.getName()).getDisplaySupplier();
+
+                final BasicContext<P> context = new BasicContext<>(request, this.messagesApi, payload);
+                if (optionalDisplaySupplier.isPresent()) {
+                    data.add(optionalDisplaySupplier.get().apply(entity, context));
+                } else {
+                    this.resolveColumn(column, data, entity, context);
+                }
+            }
+        });
+
+        return data;
+    }
+
+    /**
+     * Resolve column.
+     *
+     * @param column  the column
+     * @param data    the data
+     * @param entity  the entity
+     * @param context the context
+     */
+    protected void resolveColumn(final Column column, final ArrayNode data, final E entity, final Context<P> context) {
+        final Method method = this.methodForColumn(column);
+
+        if (method == null) {
+            data.addNull();
+            return;
+        }
+
+        try {
+            final Object obj = method.invoke(entity);
+            Converter<?> converter = null;
+
+            // Try getting a converter with the instance converters.
+            converter = this.getConverter(obj, this.converters);
+
+            if (converter == null) {
+                // Try getting a converter from the global converters.
+                converter = this.getConverter(obj, PlayDataTablesConfig.getInstance().getConverters());
             }
 
-            final Optional<BiFunction<E, Context<P>, String>> optionalDisplaySupplier = this.field(column.getName()).getDisplaySupplier();
-            if (optionalDisplaySupplier.isPresent()) {
-                data.add(optionalDisplaySupplier.get().apply(entity, new BasicContext<>(request, this.messagesApi, payload)));
+            if (converter != null) {
+                converter.addToArray(data, obj, context.asGeneric());
             } else {
-                final Method method = this.methodForColumn(column);
-                if (method == null) {
-                    data.addNull();
-                    continue;
-                }
+                data.addNull();
+            }
+        } catch (final IllegalAccessException | InvocationTargetException e) {
+            data.addNull();
+        }
+    }
 
-                try {
-                    SimplePlayDataTables.addToArray(data, method.invoke(entity));
-                } catch (final IllegalAccessException | InvocationTargetException e) {
-                    data.addNull();
-                }
+    /**
+     * Gets converter.
+     *
+     * @param obj        the obj
+     * @param converters the converters
+     * @return the converter
+     */
+    protected Converter<?> getConverter(final Object obj, final Map<Class<?>, Converter<?>> converters) {
+        final Class<?> objClass = obj.getClass();
+
+        if (converters.containsKey(objClass)) {
+            // If the class is explicitly added with a converter.
+            return converters.get(objClass);
+        }
+
+        // If a converter could match with a sub-type.
+        for (final Map.Entry<Class<?>, Converter<?>> entry : converters.entrySet()) {
+            if (entry.getKey().isAssignableFrom(objClass)) {
+                return entry.getValue();
             }
         }
 
-        return data;
+        return null;
     }
 
     /**
@@ -306,44 +364,6 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
         return null;
     }
 
-    /**
-     * Add an object to a Json ArrayNode trying to solve the type.
-     * If the object can't be solved, null is put on the array.
-     *
-     * @param data   the array
-     * @param object the object
-     */
-    private static void addToArray(final ArrayNode data, final Object object) {
-        if (object == null) {
-            data.addNull();
-        } else if (object instanceof String) {
-            data.add((String) object);
-        } else if (object instanceof Integer) {
-            data.add((Integer) object);
-        } else if (object instanceof Long) {
-            data.add((Long) object);
-        } else if (object instanceof Double) {
-            data.add((Double) object);
-        } else if (object instanceof UUID) {
-            data.add(object.toString());
-        } else if (object instanceof Boolean) {
-            data.add((Boolean) object);
-        } else if (object instanceof JsonNode) {
-            data.add((JsonNode) object);
-        } else if (object instanceof Enum) {
-            final String tmp = object.toString();
-            try {
-                data.add(Integer.valueOf(tmp));
-            } catch (final NumberFormatException ignore) {
-                data.add(tmp);
-            }
-        } else if (object instanceof DateTime) {
-            data.add(((DateTime) object).toString("dd/MM/yyyy"));
-        } else {
-            data.addNull();
-        }
-    }
-
     @Override
     public FieldBehavior<E, S, P> field(final String fieldName) {
         if (!this.fieldsBehavior.containsKey(fieldName)) {
@@ -355,5 +375,10 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
     @Override
     public void setField(final String fieldName, final FieldBehavior<E, S, P> fieldBehavior) {
         this.fieldsBehavior.put(fieldName, fieldBehavior);
+    }
+
+    @Override
+    public <T> void addConverter(final Converter<T> converter) {
+        this.converters.put(converter.getBackedType(), converter);
     }
 }
