@@ -45,48 +45,93 @@ public class ParametersHelper {
      */
     public static Parameters createForNameEntity() {
         final Parameters parameters = new Parameters();
-        final List<Column> columns = new ArrayList<>();
+        final ColumnFactory columnFactory = new ColumnFactory();
         parameters.setDraw(1);
         parameters.setStart(0);
         parameters.setLength(10);
-        parameters.setColumns(columns);
+        parameters.setColumns(columnFactory.getColumns());
 
-        columns.add(new Column() {{
-            this.setData(0);
-            this.setName("firstName");
-            this.setSearcheable(true);
-            this.setOrderable(true);
-        }});
+        columnFactory
+                .addColumn("createdAt")
+                .addColumn("uid")
+                .addColumn("firstName")
+                .addColumn("lastName")
+                .addColumn("fullName") // Computed column that does not exists in the original entity
+                .addColumn("title")
+                .addColumn("bloodGroup")
+                .addColumn("active")
+                .addColumn("longNumber")
+                .addColumn("integerNumber")
+                .addColumn("doubleNumber")
+                .addColumn("floatNumber")
+                .addColumn("bigIntegerNumber")
+                .addColumn("bigDecimalNumber")
+                .addColumn("jsonNode")
+                .addColumn("simpleEnum")
+                .addColumn("numberEnum");
 
-        columns.add(new Column() {{
-            this.setData(1);
-            this.setName("lastName");
-            this.setSearcheable(true);
-            this.setOrderable(true);
-        }});
-
-        columns.add(new Column() {{
-            this.setData(2);
-            this.setName("title");
-            this.setSearcheable(true);
-            this.setOrderable(true);
-        }});
-
-        columns.add(new Column() {{
-            this.setData(3);
-            this.setName("bloodGroup");
-            this.setSearcheable(true);
-            this.setOrderable(true);
-        }});
-
-        // Computed field which is not on the entity by default.
-        columns.add(new Column() {{
-            this.setData(4);
-            this.setName("fullName");
-            this.setSearcheable(false);
-            this.setOrderable(false);
-        }});
-        
         return parameters;
+    }
+
+    /**
+     * The type Column factory.
+     */
+    private static class ColumnFactory {
+
+        /**
+         * The Id.
+         */
+        private int id;
+
+        /**
+         * The Columns.
+         */
+        private final List<Column> columns;
+
+        /**
+         * Instantiates a new Column factory.
+         */
+        public ColumnFactory() {
+            this.id = 0;
+            this.columns = new ArrayList<>();
+        }
+
+        /**
+         * Add column column factory.
+         *
+         * @param name the name
+         * @return the column factory
+         */
+        public ColumnFactory addColumn(final String name) {
+            return this.addColumn(name, true, true);
+        }
+
+        /**
+         * Add column column factory.
+         *
+         * @param name        the name
+         * @param searcheable the searcheable
+         * @param orderable   the orderable
+         * @return the column factory
+         */
+        public ColumnFactory addColumn(final String name, final boolean searcheable, final boolean orderable) {
+            this.columns.add(new Column() {{
+                this.setData(ColumnFactory.this.id);
+                this.setName(name);
+                this.setSearcheable(searcheable);
+                this.setOrderable(orderable);
+            }});
+            this.id++;
+            return this;
+        }
+
+        /**
+         * Gets columns.
+         *
+         * @return the columns
+         */
+        public List<Column> getColumns() {
+            return this.columns;
+        }
     }
 }

@@ -161,7 +161,6 @@ public class DataProviderTest {
         line.elements().forEachRemaining(jsonNode -> {
             Assertions.assertNotNull(jsonNode.asText());
             Assertions.assertFalse(jsonNode.isNull());
-            Assertions.assertNotEquals("", jsonNode.asText());
         });
     }
 
@@ -173,7 +172,7 @@ public class DataProviderTest {
     public void search() {
         final Parameters parameters = ParametersHelper.createForNameEntity();
 
-        final Column bloodTypeColumn = parameters.getColumns().get(3);
+        final Column bloodTypeColumn = parameters.getColumns().get(6);
         final Search search = new Search();
         search.setValue("A+");
         bloodTypeColumn.setSearch(search);
@@ -185,7 +184,7 @@ public class DataProviderTest {
         final JsonNode data = ajaxResult.get("data");
         Assertions.assertTrue(data.isArray());
         for (final JsonNode node : data) {
-            Assertions.assertEquals("A+", node.get(3).asText());
+            Assertions.assertEquals("A+", node.get(6).asText());
         }
     }
 }

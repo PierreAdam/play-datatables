@@ -291,6 +291,8 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
         final Method method = this.methodForColumn(column);
 
         if (method == null) {
+            this.logger.warn("No getter were find for the field \"{}\" and no displaySupplier were set. Adding null !",
+                    column.getName());
             data.addNull();
             return;
         }
