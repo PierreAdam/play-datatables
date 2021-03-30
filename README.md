@@ -48,7 +48,7 @@ $> mvn deploy -P release
 ### With Sbt
 
 ```scala
-libraryDependencies += "com.jackson42.play" % "play-datatables" % "21.03"
+libraryDependencies += "com.jackson42.play" % "play-datatables" % "21.04"
 ```
 
 ### With Maven
@@ -57,7 +57,7 @@ libraryDependencies += "com.jackson42.play" % "play-datatables" % "21.03"
 <dependency>
     <groupId>com.jackson42.play</groupId>
     <artifactId>play-datatables</artifactId>
-    <version>21.03</version>
+    <version>21.04</version>
 </dependency>
 ``` 
 
@@ -69,7 +69,16 @@ Example of implementation is available in the tests. For a more concrete example
 
 | Library Version | Play Version | Tested DataTables Version  |
 |-----------------|--------------|----------------------------|
+| 21.04           | 2.8.x        | 1.10.x                     |
 | 21.03           | 2.8.x        | 1.10.x                     |
+
+### Changelog
+
+#### 21.04
+
+- Add a new concept of converters that allow to have a custom object being displayed properly by Play DataTables.
+- Refactoring of some complicated part of the code.
+- Compilation is now made to be done with Java 11 but compiled for Java 1.8.
 
 ## License
 
