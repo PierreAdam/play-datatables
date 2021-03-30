@@ -203,7 +203,7 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
         }
 
         // Process Column search.
-        parameters.getColumns()
+        parameters.getSafeColumns()
                 .stream()
                 .filter(column -> column != null && column.hasSearch())
                 .forEach(column -> {
@@ -227,7 +227,7 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
     private void applyOrder(final S provider, final Parameters parameters) {
         final Map<Integer, Column> indexedColumns = parameters.getIndexedColumns();
 
-        parameters.getOrder().forEach(order -> {
+        parameters.getSafeOrder().forEach(order -> {
             final String columnName = indexedColumns.get(order.getColumn()).getName();
             final Optional<BiConsumer<S, OrderEnum>> optionalOrderHandler = this.field(columnName).getOrderHandler();
 
