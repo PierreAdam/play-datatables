@@ -18,8 +18,11 @@
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:sszzz</maven.build.timestamp.format>
 
+        <!-- Which version of java is it compiled for -->
+        <java.version>8</java.version>
+
         <!-- The key ID used to sign the build. -->
-        <gpg.keyname>8A4BDD97</gpg.keyname>
+        <gpg.keyname>yourkeyhere</gpg.keyname>
     </properties>
 
     <licenses>
@@ -62,8 +65,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <release>${java.version}</release>
                 </configuration>
             </plugin>
             <!-- Copy dependencies -->
@@ -119,6 +123,7 @@
                         <configuration>
                             <encoding>UTF-8</encoding>
                             <show>package</show>
+                            <source>${java.version}</source>
                         </configuration>
                         <executions>
                             <execution>
