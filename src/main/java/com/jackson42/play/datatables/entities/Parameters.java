@@ -119,7 +119,7 @@ public class Parameters {
      * @return the list of ordering
      */
     public List<Order> getOrder() {
-        return this.order != null ? this.order : new ArrayList<>();
+        return this.order;
     }
 
     /**
