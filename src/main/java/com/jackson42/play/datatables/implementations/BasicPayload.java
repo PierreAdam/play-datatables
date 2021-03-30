@@ -22,46 +22,52 @@
  * SOFTWARE.
  */
 
-package dataprovider;
+package com.jackson42.play.datatables.implementations;
 
-import com.jackson42.play.datatables.entities.internal.DataSource;
-import com.jackson42.play.datatables.implementations.BasicPayload;
-import com.jackson42.play.datatables.implementations.SimplePlayDataTables;
 import com.jackson42.play.datatables.interfaces.Payload;
-import play.i18n.MessagesApi;
+import play.libs.typedmap.TypedEntry;
+import play.libs.typedmap.TypedKey;
+import play.libs.typedmap.TypedMap;
 
-import java.util.List;
+import java.util.Optional;
 
 /**
- * MyDataProvider.
+ * PlayDataTablesPayloadImpl.
  *
  * @author Pierre Adam
- * @since 21.03.02
+ * @since 21.03.01
  */
-public class MyDataTable extends SimplePlayDataTables<PersonEntity, DummyProvider, Payload> {
+public class BasicPayload implements Payload {
 
     /**
-     * Instantiates a new My data table.
-     *
-     * @param messagesApi the messages api
+     * The Typed map.
      */
-    public MyDataTable(final MessagesApi messagesApi) {
-        super(PersonEntity.class, messagesApi, DummyProvider::new);
+    private TypedMap typedMap;
+
+    /**
+     * Instantiates a new Play data tables payload.
+     */
+    public BasicPayload() {
+        this.typedMap = TypedMap.create();
     }
 
     @Override
-    protected void setPagination(final DummyProvider dummyProvider, final int startElement, final int numberOfElement) {
-        dummyProvider.setPagination(startElement, numberOfElement);
+    public <T> void put(final TypedKey<T> key, final T value) {
+        this.typedMap = this.typedMap.put(key, value);
     }
 
     @Override
-    protected DataSource<PersonEntity> dataSourceFromProvider(final DummyProvider dummyProvider, final Payload payload) {
-        final List<PersonEntity> result = dummyProvider.getResult();
-        return new DataSource<>(dummyProvider.getInitialSize(), result.size(), result);
+    public <T> void putAll(final TypedEntry<?>... typedEntries) {
+        this.typedMap = this.typedMap.putAll(typedEntries);
     }
 
     @Override
-    protected Payload getDefaultPayload() {
-        return new BasicPayload();
+    public <T> T get(final TypedKey<T> key) {
+        return this.typedMap.get(key);
+    }
+
+    @Override
+    public <T> Optional<T> getOptional(final TypedKey<T> key) {
+        return this.typedMap.getOptional(key);
     }
 }

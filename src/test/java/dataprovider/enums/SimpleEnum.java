@@ -22,45 +22,45 @@
  * SOFTWARE.
  */
 
-package com.jackson42.play.datatables.interfaces;
+package dataprovider.enums;
 
-import play.i18n.Messages;
-import play.mvc.Http;
+import java.util.Random;
 
 /**
- * PdtContext.
+ * SimpleEnum.
  *
- * @param <P> the type parameter
  * @author Pierre Adam
- * @since 21.03.01
+ * @since 21.03.29
  */
-public interface Context<P extends Payload> {
+public enum SimpleEnum {
 
     /**
-     * Gets request.
-     *
-     * @return the request
+     * Waiting simple enum.
      */
-    Http.Request getRequest();
+    WAITING,
 
     /**
-     * Gets an instance of messages.
-     *
-     * @return an instance of messages
+     * In progress simple enum.
      */
-    Messages getMessages();
+    IN_PROGRESS,
 
     /**
-     * Gets payload.
-     *
-     * @return the payload
+     * Success simple enum.
      */
-    P getPayload();
+    SUCCESS,
 
     /**
-     * As generic context.
-     *
-     * @return the context
+     * Failed simple enum.
      */
-    Context<Payload> asGeneric();
+    FAILED;
+
+    /**
+     * Rand simple enum.
+     *
+     * @param random the random
+     * @return the simple enum
+     */
+    public static SimpleEnum rand(final Random random) {
+        return SimpleEnum.values()[random.nextInt(SimpleEnum.values().length)];
+    }
 }

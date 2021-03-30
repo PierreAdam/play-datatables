@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.jackson42.play.datatables.implementation;
+package com.jackson42.play.datatables.implementations;
 
 import com.jackson42.play.datatables.entities.Parameters;
 import com.jackson42.play.datatables.entities.internal.DataSource;

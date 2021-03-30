@@ -22,45 +22,64 @@
  * SOFTWARE.
  */
 
-package com.jackson42.play.datatables.interfaces;
+package dataprovider.enums;
 
-import play.i18n.Messages;
-import play.mvc.Http;
+import java.util.Random;
 
 /**
- * PdtContext.
+ * NumberEnum.
  *
- * @param <P> the type parameter
  * @author Pierre Adam
- * @since 21.03.01
+ * @since 21.03.29
  */
-public interface Context<P extends Payload> {
+public enum NumberEnum {
 
     /**
-     * Gets request.
-     *
-     * @return the request
+     * Pending number enum.
      */
-    Http.Request getRequest();
+    PENDING(0),
 
     /**
-     * Gets an instance of messages.
-     *
-     * @return an instance of messages
+     * Active number enum.
      */
-    Messages getMessages();
+    ACTIVE(1),
 
     /**
-     * Gets payload.
-     *
-     * @return the payload
+     * Blocked number enum.
      */
-    P getPayload();
+    BLOCKED(2),
 
     /**
-     * As generic context.
-     *
-     * @return the context
+     * Deleted number enum.
      */
-    Context<Payload> asGeneric();
+    DELETED(3);
+
+    /**
+     * The Value.
+     */
+    private final int value;
+
+    /**
+     * Instantiates a new Number enum.
+     *
+     * @param value the value
+     */
+    NumberEnum(final int value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(this.value);
+    }
+
+    /**
+     * Rand number enum.
+     *
+     * @param random the random
+     * @return the number enum
+     */
+    public static NumberEnum rand(final Random random) {
+        return NumberEnum.values()[random.nextInt(NumberEnum.values().length)];
+    }
 }

@@ -39,6 +39,7 @@ import tools.ParametersHelper;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -52,8 +53,14 @@ import java.util.stream.Collectors;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class DataProviderTest {
 
+    /**
+     * The Logger.
+     */
     private final Logger logger;
 
+    /**
+     * The My data table.
+     */
     private final MyDataTable myDataTable;
 
     /**
@@ -96,10 +103,10 @@ public class DataProviderTest {
         this.myDataTable.setOrderHandler("title", orderHandler.apply(PersonEntity::getTitle));
         this.myDataTable.setOrderHandler("bloodGroup", orderHandler.apply(PersonEntity::getBloodGroup));
 
-        this.myDataTable.setFieldDisplaySupplier("firstName", (entity, payloadContext) -> entity.getFirstName());
-        this.myDataTable.setFieldDisplaySupplier("lastName", (entity, payloadContext) -> entity.getLastName());
-        this.myDataTable.setFieldDisplaySupplier("title", (entity, payloadContext) -> entity.getTitle());
-        this.myDataTable.setFieldDisplaySupplier("bloodGroup", (entity, payloadContext) -> entity.getBloodGroup());
+        //this.myDataTable.setFieldDisplaySupplier("firstName", (entity, payloadContext) -> entity.getFirstName());
+        //this.myDataTable.setFieldDisplaySupplier("lastName", (entity, payloadContext) -> entity.getLastName());
+        //this.myDataTable.setFieldDisplaySupplier("title", (entity, payloadContext) -> entity.getTitle());
+        //this.myDataTable.setFieldDisplaySupplier("bloodGroup", (entity, payloadContext) -> entity.getBloodGroup());
         this.myDataTable.setFieldDisplaySupplier("fullName", (entity, payloadContext) -> String.format("%s %s", entity.getFirstName(), entity.getLastName()));
     }
 
@@ -126,16 +133,35 @@ public class DataProviderTest {
     @Test
     @Order(2)
     public void pagination() {
+        final Random random = new Random();
         final Parameters parameters = ParametersHelper.createForNameEntity();
+        parameters.setDraw(random.nextInt());
 
         final JsonNode ajaxResult = this.myDataTable.getAjaxResult(null, parameters);
 
         this.logger.trace("{}", ajaxResult.toPrettyString());
+
+        // Validating the returned data.
         Assertions.assertTrue(ajaxResult.has("data"));
+        Assertions.assertEquals(parameters.getDraw(), ajaxResult.get("draw").asInt());
+        Assertions.assertEquals(DummyProvider.SAMPLE_SIZE, ajaxResult.get("recordsTotal").asInt());
+        Assertions.assertEquals(parameters.getLength(), ajaxResult.get("recordsFiltered").asInt());
 
         final JsonNode data = ajaxResult.get("data");
         Assertions.assertTrue(data.isArray());
         Assertions.assertEquals(parameters.getLength(), data.size());
+
+        // Retrieve the first line and check if the json is correctly formatted and match the given parameters.
+        final JsonNode line = data.get(0);
+        Assertions.assertNotNull(line);
+        Assertions.assertTrue(line.isArray());
+        Assertions.assertEquals(parameters.getColumns().size(), line.size());
+
+        // Check that the elements on the first line are well populated.
+        line.elements().forEachRemaining(jsonNode -> {
+            Assertions.assertNotNull(jsonNode.asText());
+            Assertions.assertFalse(jsonNode.isNull());
+        });
     }
 
     /**
@@ -146,7 +172,7 @@ public class DataProviderTest {
     public void search() {
         final Parameters parameters = ParametersHelper.createForNameEntity();
 
-        final Column bloodTypeColumn = parameters.getColumns().get(3);
+        final Column bloodTypeColumn = parameters.getColumns().get(6);
         final Search search = new Search();
         search.setValue("A+");
         bloodTypeColumn.setSearch(search);
@@ -158,7 +184,7 @@ public class DataProviderTest {
         final JsonNode data = ajaxResult.get("data");
         Assertions.assertTrue(data.isArray());
         for (final JsonNode node : data) {
-            Assertions.assertEquals("A+", node.get(3).asText());
+            Assertions.assertEquals("A+", node.get(6).asText());
         }
     }
 }

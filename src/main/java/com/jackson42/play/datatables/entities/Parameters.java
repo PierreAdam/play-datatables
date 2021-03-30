@@ -25,10 +25,7 @@
 package com.jackson42.play.datatables.entities;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * AjaxQueryForm.
@@ -95,6 +92,15 @@ public class Parameters {
      * @return the list of columns
      */
     public List<Column> getColumns() {
+        return this.columns;
+    }
+
+    /**
+     * Get the list of columns or an empty list if columns is null.
+     *
+     * @return the list of columns
+     */
+    public List<Column> getSafeColumns() {
         return this.columns != null ? this.columns : new ArrayList<>();
     }
 
@@ -113,6 +119,15 @@ public class Parameters {
      * @return the list of ordering
      */
     public List<Order> getOrder() {
+        return this.order;
+    }
+
+    /**
+     * Get the list for ordering or an empty list if order is null.
+     *
+     * @return the list of ordering
+     */
+    public List<Order> getSafeOrder() {
         return this.order != null ? this.order : new ArrayList<>();
     }
 
@@ -195,9 +210,19 @@ public class Parameters {
      */
     public Map<Integer, Column> getIndexedColumns() {
         return new HashMap<Integer, Column>() {{
-            for (final Column column : Parameters.this.getColumns()) {
+            for (final Column column : Parameters.this.getSafeColumns()) {
                 this.put(column.getData(), column);
             }
         }};
+    }
+
+    /**
+     * Gets ordered columns.
+     *
+     * @return the ordered columns
+     */
+    public List<Column> getOrderedColumns() {
+        final TreeMap<Integer, Column> treeMap = new TreeMap<>(this.getIndexedColumns());
+        return new ArrayList<>(treeMap.values());
     }
 }

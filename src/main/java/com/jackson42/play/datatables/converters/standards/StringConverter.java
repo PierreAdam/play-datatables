@@ -22,46 +22,29 @@
  * SOFTWARE.
  */
 
-package dataprovider;
+package com.jackson42.play.datatables.converters.standards;
 
-import com.jackson42.play.datatables.entities.internal.DataSource;
-import com.jackson42.play.datatables.implementations.BasicPayload;
-import com.jackson42.play.datatables.implementations.SimplePlayDataTables;
+import com.jackson42.play.datatables.converters.ConverterToString;
+import com.jackson42.play.datatables.interfaces.Context;
 import com.jackson42.play.datatables.interfaces.Payload;
-import play.i18n.MessagesApi;
-
-import java.util.List;
 
 /**
- * MyDataProvider.
+ * StringConverter.
  *
  * @author Pierre Adam
- * @since 21.03.02
+ * @since 21.03.29
  */
-public class MyDataTable extends SimplePlayDataTables<PersonEntity, DummyProvider, Payload> {
+public class StringConverter extends ConverterToString<String> {
 
     /**
-     * Instantiates a new My data table.
-     *
-     * @param messagesApi the messages api
+     * Instantiates a new converter.
      */
-    public MyDataTable(final MessagesApi messagesApi) {
-        super(PersonEntity.class, messagesApi, DummyProvider::new);
+    public StringConverter() {
+        super(String.class);
     }
 
     @Override
-    protected void setPagination(final DummyProvider dummyProvider, final int startElement, final int numberOfElement) {
-        dummyProvider.setPagination(startElement, numberOfElement);
-    }
-
-    @Override
-    protected DataSource<PersonEntity> dataSourceFromProvider(final DummyProvider dummyProvider, final Payload payload) {
-        final List<PersonEntity> result = dummyProvider.getResult();
-        return new DataSource<>(dummyProvider.getInitialSize(), result.size(), result);
-    }
-
-    @Override
-    protected Payload getDefaultPayload() {
-        return new BasicPayload();
+    public String convert(final String obj, final Context<Payload> context) {
+        return obj;
     }
 }

@@ -28,11 +28,19 @@ $> mvn package
 $> mvn install
 ```
 
-### Deployment
+### Install or deploy
+
+To install in your local repository.
+
+```shell
+$> mvn install
+```
+
+To deploy to a remote repository.
 
 ```shell
 $> mvn verify
-$> mvn deploy
+$> mvn deploy -P release
 ```
 
 ## How to import the library
