@@ -1,6 +1,29 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2021 Pierre Adam
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package tests;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.jackson42.play.datatables.entities.Column;
 import com.jackson42.play.datatables.entities.Parameters;
 import com.jackson42.play.datatables.entities.Search;
@@ -12,12 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.Application;
 import play.data.FormFactory;
-import play.libs.Json;
 import play.mvc.Http;
 import play.test.Helpers;
+import tools.ResourcesLoader;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -136,7 +157,7 @@ public class EntitiesTest implements DataTablesHelper {
 
         final Http.Request fakeRequest = Helpers.fakeRequest("POST", "https://localhost:9000/datatables")
                 .transientLang(Locale.ENGLISH)
-                .bodyJson(this.loadBody("simple.json"))
+                .bodyJson(ResourcesLoader.loadBody("testdata/formentities/simple.json"))
                 .build();
 
         Assertions.assertEquals("Success",
@@ -179,7 +200,7 @@ public class EntitiesTest implements DataTablesHelper {
 
         final Http.Request fakeRequest = Helpers.fakeRequest("POST", "https://localhost:9000/datatables")
                 .transientLang(Locale.ENGLISH)
-                .bodyJson(this.loadBody("complete.json"))
+                .bodyJson(ResourcesLoader.loadBody("testdata/formentities/complete.json"))
                 .build();
 
         Assertions.assertEquals("Success",
@@ -239,7 +260,7 @@ public class EntitiesTest implements DataTablesHelper {
 
         final Http.Request fakeRequest = Helpers.fakeRequest("POST", "https://localhost:9000/datatables")
                 .transientLang(Locale.ENGLISH)
-                .bodyJson(this.loadBody("invalid.json"))
+                .bodyJson(ResourcesLoader.loadBody("testdata/formentities/invalid.json"))
                 .build();
 
         Assertions.assertEquals("Success",
@@ -264,7 +285,7 @@ public class EntitiesTest implements DataTablesHelper {
 
         final Http.Request fakeRequest = Helpers.fakeRequest("POST", "https://localhost:9000/datatables")
                 .transientLang(Locale.ENGLISH)
-                .bodyJson(this.loadBody("weird.json"))
+                .bodyJson(ResourcesLoader.loadBody("testdata/formentities/weird.json"))
                 .build();
 
         Assertions.assertEquals("Success",
@@ -304,7 +325,7 @@ public class EntitiesTest implements DataTablesHelper {
 
         final Http.Request fakeRequest = Helpers.fakeRequest("POST", "https://localhost:9000/datatables")
                 .transientLang(Locale.ENGLISH)
-                .bodyJson(this.loadBody("simple.json"))
+                .bodyJson(ResourcesLoader.loadBody("testdata/formentities/simple.json"))
                 .build();
 
         try {
@@ -354,7 +375,7 @@ public class EntitiesTest implements DataTablesHelper {
 
         final Http.Request fakeRequest = Helpers.fakeRequest("POST", "https://localhost:9000/datatables")
                 .transientLang(Locale.ENGLISH)
-                .bodyJson(this.loadBody("invalid.json"))
+                .bodyJson(ResourcesLoader.loadBody("testdata/formentities/invalid.json"))
                 .build();
 
         try {
@@ -371,26 +392,6 @@ public class EntitiesTest implements DataTablesHelper {
         } catch (final InterruptedException | ExecutionException e) {
             this.logger.error("Error while executing the completable future", e);
             Assertions.fail("Something went wrong while executing the completable future");
-        }
-    }
-
-    /**
-     * Load body json node.
-     *
-     * @param filename the filename
-     * @return the json node
-     */
-    private JsonNode loadBody(final String filename) {
-        final String path = "testdata/formentities/" + filename;
-        final URL resource = this.getClass().getClassLoader().getResource(path);
-        if (resource == null) {
-            throw new RuntimeException("The file [" + path + "] was not found ! Aborting test !");
-        } else {
-            try {
-                return Json.mapper().reader().readTree(resource.openStream());
-            } catch (final IOException e) {
-                throw new RuntimeException("An error occurred while loading the file [" + path + "]. Aborting test !", e);
-            }
         }
     }
 }

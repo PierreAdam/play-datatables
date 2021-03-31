@@ -22,33 +22,38 @@
  * SOFTWARE.
  */
 
-package mocking.play;
+package tools;
 
-import play.api.i18n.DefaultMessagesApi;
-import play.i18n.MessagesApi;
+import com.fasterxml.jackson.databind.JsonNode;
+import play.libs.Json;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+import java.net.URL;
 
 /**
- * FakeMessagesApi.
+ * ResourcesLoader.
  *
  * @author Pierre Adam
- * @since 21.03.31
+ * @since 21.04.01
  */
-public class MessagesApiFactory {
+public class ResourcesLoader {
 
-    private MessagesApiFactory() {
-    }
-
-    public static MessagesApi create() {
-        final Map<String, Map<String, String>> data = new HashMap<>();
-
-        data.put("en", Collections.singletonMap("hello", "Hello"));
-        data.put("fr", Collections.singletonMap("hello", "Bonjour"));
-        data.put("es", Collections.singletonMap("hello", "Buenos dias"));
-
-        return new MessagesApi(new DefaultMessagesApi(data));
+    /**
+     * Load body json node.
+     *
+     * @param path the path
+     * @return the json node
+     */
+    public static JsonNode loadBody(final String path) {
+        final URL resource = ResourcesLoader.class.getClassLoader().getResource(path);
+        if (resource == null) {
+            throw new RuntimeException("The file [" + path + "] was not found ! Aborting test !");
+        } else {
+            try {
+                return Json.mapper().reader().readTree(resource.openStream());
+            } catch (final IOException e) {
+                throw new RuntimeException("An error occurred while loading the file [" + path + "]. Aborting test !", e);
+            }
+        }
     }
 }
