@@ -1,0 +1,50 @@
+{
+  "parameters": {
+    "draw": 42,
+    "start": 0,
+    "length": 10,
+    "search": {
+      "value": "global search",
+      "regex": false
+    },
+    "columns": [
+      {
+        "data": 0,
+        "name": "id",
+        "searcheable": false,
+        "orderable": true,
+        "search": null
+      },
+      {
+        "data": 1,
+        "name": "firstName",
+        "searcheable": true,
+        "orderable": true,
+        "search": {
+          "value": "firstName search",
+          "regex": false
+        }
+      },
+      {
+        "data": 2,
+        "name": "lastName",
+        "searcheable": true,
+        "orderable": true,
+        "search": {
+          "value": "lastName search",
+          "regex": false
+        }
+      }
+    ],
+    "order": [
+      {
+        "column": 2,
+        "dir": "asc"
+      },
+      {
+        "column": 1,
+        "dir": "desc"
+      }
+    ]
+  }
+}

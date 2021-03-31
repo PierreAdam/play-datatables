@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package dataprovider;
+package mocking.dataprovider;
 
 import com.github.javafaker.Faker;
 

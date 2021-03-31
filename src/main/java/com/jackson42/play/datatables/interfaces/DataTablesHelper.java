@@ -44,17 +44,17 @@ public interface DataTablesHelper {
     /**
      * Forge a form from the request and call the errorCallback or the successCallback according to the form.
      *
-     * @param <RESULT>        the type of the return
+     * @param <R>             the type of the return
      * @param request         the request
      * @param formFactory     the form factory
      * @param errorCallback   the on error
      * @param successCallback the callback
-     * @return the r
+     * @return the R
      */
-    default <RESULT> RESULT dataTablesAjaxRequest(final Http.Request request,
-                                                  final FormFactory formFactory,
-                                                  final Function<Form<AjaxQueryForm>, RESULT> errorCallback,
-                                                  final Function<AjaxQueryForm, RESULT> successCallback) {
+    default <R> R dataTablesAjaxRequest(final Http.Request request,
+                                        final FormFactory formFactory,
+                                        final Function<Form<AjaxQueryForm>, R> errorCallback,
+                                        final Function<AjaxQueryForm, R> successCallback) {
         final Form<AjaxQueryForm> boundForm = formFactory.form(AjaxQueryForm.class).bindFromRequest(request);
 
         if (boundForm.hasErrors()) {
@@ -68,17 +68,17 @@ public interface DataTablesHelper {
      * Forge a form from the request and call the errorCallback or the successCallback according to the form.
      * Return a CompletionStage that process the form and callbacks asynchronously.
      *
-     * @param <RESULT>        the type of the return
+     * @param <R>             the type of the return inside of the completion stage
      * @param request         the request
      * @param formFactory     the form factory
      * @param errorCallback   the on error
      * @param successCallback the callback
-     * @return the r
+     * @return the completion stage of R
      */
-    default <RESULT> CompletionStage<RESULT> dataTablesAjaxRequestAsync(final Http.Request request,
-                                                                        final FormFactory formFactory,
-                                                                        final Function<Form<AjaxQueryForm>, RESULT> errorCallback,
-                                                                        final Function<AjaxQueryForm, RESULT> successCallback) {
+    default <R> CompletionStage<R> dataTablesAjaxRequestAsync(final Http.Request request,
+                                                              final FormFactory formFactory,
+                                                              final Function<Form<AjaxQueryForm>, R> errorCallback,
+                                                              final Function<AjaxQueryForm, R> successCallback) {
         final Form<AjaxQueryForm> ajaxQueryForm = formFactory.form(AjaxQueryForm.class).bindFromRequest(request);
 
         return CompletableFuture.supplyAsync(() -> {

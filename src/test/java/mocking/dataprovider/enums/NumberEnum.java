@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package dataprovider.enums;
+package mocking.dataprovider.enums;
 
 import java.util.Random;
 

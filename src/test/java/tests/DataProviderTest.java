@@ -25,20 +25,28 @@
 package tests;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.jackson42.play.datatables.converters.standards.DateTimeConverter;
 import com.jackson42.play.datatables.entities.Column;
 import com.jackson42.play.datatables.entities.Parameters;
 import com.jackson42.play.datatables.entities.Search;
 import com.jackson42.play.datatables.enumerations.OrderEnum;
-import dataprovider.DummyProvider;
-import dataprovider.MyDataTable;
-import dataprovider.PersonEntity;
+import com.jackson42.play.datatables.implementations.BasicPayload;
+import mocking.dataprovider.DummyProvider;
+import mocking.dataprovider.MyDataTable;
+import mocking.dataprovider.PersonEntity;
+import mocking.play.MessagesApiFactory;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import play.i18n.Messages;
+import play.mvc.Http;
+import play.test.Helpers;
+import play.twirl.api.Html;
 import tools.ParametersHelper;
 
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -68,7 +76,8 @@ public class DataProviderTest {
      */
     DataProviderTest() {
         this.logger = LoggerFactory.getLogger(DataProviderTest.class);
-        this.myDataTable = new MyDataTable(null);
+
+        this.myDataTable = new MyDataTable(MessagesApiFactory.create());
         this.myDataTable.setGlobalSearchHandler((dummyProvider, search) ->
                 dummyProvider.alterData(list -> list.stream().filter(entity ->
                         String.format("%s %s", entity.getFirstName(), entity.getLastName()).contains(search)).collect(Collectors.toList()))
@@ -79,22 +88,18 @@ public class DataProviderTest {
         );
 
         this.myDataTable.setSearchHandler("bloodGroup", (dummyProvider, search) ->
-                dummyProvider.alterData(list -> {
-                            final List<PersonEntity> newList = list
-                                    .stream()
-                                    .filter(entity -> entity.getBloodGroup().contains(search))
-                                    .peek(entity -> this.logger.debug("KEEP : {}", entity.toString()))
-                                    .collect(Collectors.toList());
-
-                            return newList;
-                        }
+                dummyProvider.alterData(list -> list
+                        .stream()
+                        .filter(entity -> entity.getBloodGroup().contains(search))
+                        .collect(Collectors.toList())
                 )
         );
 
         final Function<Function<PersonEntity, String>, BiConsumer<DummyProvider, OrderEnum>> orderHandler = method ->
                 (dummyProvider, orderEnum) ->
                         dummyProvider.alterData(list -> {
-                            list.sort(Comparator.comparing(method));
+                            list.sort((o1, o2) ->
+                                    method.apply(o1).compareTo(method.apply(o2)) * (orderEnum == OrderEnum.ASC ? 1 : -1));
                             return list;
                         });
 
@@ -103,11 +108,20 @@ public class DataProviderTest {
         this.myDataTable.setOrderHandler("title", orderHandler.apply(PersonEntity::getTitle));
         this.myDataTable.setOrderHandler("bloodGroup", orderHandler.apply(PersonEntity::getBloodGroup));
 
-        //this.myDataTable.setFieldDisplaySupplier("firstName", (entity, payloadContext) -> entity.getFirstName());
-        //this.myDataTable.setFieldDisplaySupplier("lastName", (entity, payloadContext) -> entity.getLastName());
-        //this.myDataTable.setFieldDisplaySupplier("title", (entity, payloadContext) -> entity.getTitle());
-        //this.myDataTable.setFieldDisplaySupplier("bloodGroup", (entity, payloadContext) -> entity.getBloodGroup());
-        this.myDataTable.setFieldDisplaySupplier("fullName", (entity, payloadContext) -> String.format("%s %s", entity.getFirstName(), entity.getLastName()));
+        this.myDataTable.setFieldDisplaySupplier("fullName", (entity, context) ->
+                String.format("%s %s %s", context.getMessages().apply("hello"), entity.getFirstName(), entity.getLastName()));
+
+        this.myDataTable.setFieldDisplaySupplier("simpleEnum", personEntity -> personEntity.getSimpleEnum().name());
+
+        this.myDataTable.setFieldDisplayHtmlSupplier("doubleNumber", personEntity ->
+                new Html(String.format("<b>%.2f<b/>", personEntity.getDoubleNumber())));
+
+        this.myDataTable.setFieldDisplayHtmlSupplier("actions", (personEntity, context) -> {
+            final Http.Request request = context.getRequest();
+            final Messages messages = context.getMessages();
+
+            return new Html(String.format("<a href=\"#%s\">Delete</a>", personEntity.getUid().toString()));
+        });
     }
 
     /**
@@ -133,11 +147,15 @@ public class DataProviderTest {
     @Test
     @Order(2)
     public void pagination() {
+        final Http.Request fakeRequest = Helpers.fakeRequest("POST", "https://localhost:9000/datatables")
+                .transientLang(Locale.ENGLISH)
+                .build();
+
         final Random random = new Random();
         final Parameters parameters = ParametersHelper.createForNameEntity();
         parameters.setDraw(random.nextInt());
 
-        final JsonNode ajaxResult = this.myDataTable.getAjaxResult(null, parameters);
+        final JsonNode ajaxResult = this.myDataTable.getAjaxResult(fakeRequest, parameters);
 
         this.logger.trace("{}", ajaxResult.toPrettyString());
 
@@ -175,6 +193,10 @@ public class DataProviderTest {
     @Test
     @Order(3)
     public void search() {
+        final Http.Request fakeRequest = Helpers.fakeRequest("POST", "https://localhost:9000/datatables")
+                .transientLang(Locale.ENGLISH)
+                .build();
+
         final Parameters parameters = ParametersHelper.createForNameEntity();
 
         final Column bloodTypeColumn = parameters.getColumns().get(6);
@@ -182,7 +204,7 @@ public class DataProviderTest {
         search.setValue("A+");
         bloodTypeColumn.setSearch(search);
 
-        final JsonNode ajaxResult = this.myDataTable.getAjaxResult(null, parameters);
+        final JsonNode ajaxResult = this.myDataTable.getAjaxResult(fakeRequest, parameters);
 
         this.logger.trace("{}", ajaxResult.toPrettyString());
 
@@ -191,5 +213,98 @@ public class DataProviderTest {
         for (final JsonNode node : data) {
             Assertions.assertEquals("A+", node.get(6).asText());
         }
+    }
+
+    /**
+     * Test ASC ordering.
+     */
+    @Test
+    @Order(3)
+    public void orderAsc() {
+        this.order(OrderEnum.ASC, diff -> diff >= 0);
+    }
+
+    /**
+     * Test DESC ordering.
+     */
+    @Test
+    @Order(4)
+    public void orderDesc() {
+        this.order(OrderEnum.DESC, diff -> diff <= 0);
+    }
+
+    /**
+     * Ordering logic.
+     *
+     * @param orderEnum  the order
+     * @param comparator the test
+     */
+    private void order(final OrderEnum orderEnum, final Function<Integer, Boolean> comparator) {
+        final Http.Request fakeRequest = Helpers.fakeRequest("POST", "https://localhost:9000/datatables")
+                .transientLang(Locale.ENGLISH)
+                .build();
+
+        final Parameters parameters = ParametersHelper.createForNameEntity();
+        final List<com.jackson42.play.datatables.entities.Order> orders = new ArrayList<>();
+        final com.jackson42.play.datatables.entities.Order order = new com.jackson42.play.datatables.entities.Order();
+
+        final int columnIdx = 2;
+        order.setColumn(columnIdx); // First name column
+        order.setDir(orderEnum.toString().toLowerCase());
+        orders.add(order);
+        parameters.setOrder(orders);
+        parameters.setLength(100);
+
+        final JsonNode ajaxResult = this.myDataTable.getAjaxResult(fakeRequest, parameters);
+
+        final JsonNode data = ajaxResult.get("data");
+        Assertions.assertTrue(data.isArray());
+        String previous = data.get(0).get(columnIdx).asText();
+        for (final JsonNode node : data) {
+            final String firstName = node.get(columnIdx).asText();
+            final int t = firstName.compareTo(previous);
+
+            this.logger.trace("{} <=> {} == {}", previous, firstName, t);
+
+            Assertions.assertTrue(comparator.apply(t)); // Check if the ordering is correct.
+            previous = firstName;
+        }
+    }
+
+    @Test
+    @Order(5)
+    public void datetimeWithContext() {
+        final Http.Request fakeRequest = Helpers.fakeRequest("POST", "https://localhost:9000/datatables")
+                .transientLang(Locale.ENGLISH)
+                .build();
+
+        final Random random = new Random();
+        final Parameters parameters = ParametersHelper.createForNameEntity();
+        parameters.setDraw(random.nextInt());
+
+        final BasicPayload basicPayload = new BasicPayload();
+        basicPayload.put(DateTimeConverter.DATETIME_FORMAT, "yyyy-MM");
+
+        final JsonNode ajaxResult = this.myDataTable.getAjaxResult(fakeRequest, parameters, basicPayload);
+
+        this.logger.trace("{}", ajaxResult.toPrettyString());
+
+        // Validating the returned data.
+        Assertions.assertTrue(ajaxResult.has("data"));
+        Assertions.assertEquals(parameters.getDraw(), ajaxResult.get("draw").asInt());
+        Assertions.assertEquals(DummyProvider.SAMPLE_SIZE, ajaxResult.get("recordsTotal").asInt());
+        Assertions.assertEquals(parameters.getLength(), ajaxResult.get("recordsFiltered").asInt());
+
+        final JsonNode data = ajaxResult.get("data");
+        Assertions.assertTrue(data.isArray());
+        Assertions.assertEquals(parameters.getLength(), data.size());
+
+        // Retrieve the first line and check if the date is correctly formatted
+        final JsonNode line = data.get(0);
+        final String date = line.get(0).asText();
+
+        Assertions.assertNotNull(date);
+        Assertions.assertTrue(date.matches("[0-9]{4}-[0-1][0-9]"));
+        this.logger.trace(date);
     }
 }

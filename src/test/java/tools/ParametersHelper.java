@@ -69,7 +69,8 @@ public class ParametersHelper {
                 .addColumn("jsonNode")
                 .addColumn("simpleEnum")
                 .addColumn("numberEnum")
-                .addColumn("nullData");
+                .addColumn("nullData")
+                .addColumn("actions");
 
         return parameters;
     }

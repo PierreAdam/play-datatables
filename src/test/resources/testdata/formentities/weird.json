@@ -1,0 +1,14 @@
+{
+  "parameters": {
+    "draw": 1,
+    "start": 0,
+    "length": 10,
+    "search": {
+      "regex": false
+    },
+    "columns": [
+    ],
+    "order": [
+    ]
+  }
+}

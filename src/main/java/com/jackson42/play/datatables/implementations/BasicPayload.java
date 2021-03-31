@@ -53,7 +53,7 @@ public class BasicPayload implements Payload {
 
     @Override
     public <T> void put(final TypedKey<T> key, final T value) {
-        this.typedMap = this.typedMap.put(key, value);
+        this.putAll(key.bindValue(value));
     }
 
     @Override

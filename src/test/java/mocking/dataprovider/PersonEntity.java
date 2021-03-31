@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package dataprovider;
+package mocking.dataprovider;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.javafaker.Name;
-import dataprovider.enums.NumberEnum;
-import dataprovider.enums.SimpleEnum;
+import mocking.dataprovider.enums.NumberEnum;
+import mocking.dataprovider.enums.SimpleEnum;
 import org.joda.time.DateTime;
 import play.libs.Json;
 

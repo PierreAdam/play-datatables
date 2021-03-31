@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package dataprovider;
+package mocking.dataprovider;
 
 import com.jackson42.play.datatables.entities.internal.DataSource;
 import com.jackson42.play.datatables.implementations.BasicPayload;

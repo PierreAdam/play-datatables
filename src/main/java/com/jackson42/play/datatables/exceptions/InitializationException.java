@@ -34,36 +34,10 @@ public class InitializationException extends RuntimeException {
 
     /**
      * Instantiates a new Initialization exception.
-     */
-    public InitializationException() {
-        super();
-    }
-
-    /**
-     * Instantiates a new Initialization exception.
      *
      * @param message the message
      */
-    public InitializationException(String message) {
+    public InitializationException(final String message) {
         super(message);
-    }
-
-    /**
-     * Instantiates a new Initialization exception.
-     *
-     * @param message the message
-     * @param cause   the cause
-     */
-    public InitializationException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    /**
-     * Instantiates a new Initialization exception.
-     *
-     * @param cause the cause
-     */
-    public InitializationException(Throwable cause) {
-        super(cause);
     }
 }
