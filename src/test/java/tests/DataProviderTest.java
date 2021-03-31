@@ -158,9 +158,14 @@ public class DataProviderTest {
         Assertions.assertEquals(parameters.getColumns().size(), line.size());
 
         // Check that the elements on the first line are well populated.
-        line.elements().forEachRemaining(jsonNode -> {
-            Assertions.assertNotNull(jsonNode.asText());
-            Assertions.assertFalse(jsonNode.isNull());
+        parameters.getIndexedColumns().forEach((idx, column) -> {
+            final JsonNode node = line.get(idx);
+            if (column.getName().contains("null")) {
+                Assertions.assertTrue(node.isNull());
+            } else {
+                Assertions.assertNotNull(node.asText());
+                Assertions.assertFalse(node.isNull());
+            }
         });
     }
 

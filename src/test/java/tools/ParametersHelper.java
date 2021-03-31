@@ -68,7 +68,8 @@ public class ParametersHelper {
                 .addColumn("bigDecimalNumber")
                 .addColumn("jsonNode")
                 .addColumn("simpleEnum")
-                .addColumn("numberEnum");
+                .addColumn("numberEnum")
+                .addColumn("nullData");
 
         return parameters;
     }

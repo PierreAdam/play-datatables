@@ -126,6 +126,11 @@ public class PersonEntity {
     private final NumberEnum numberEnum;
 
     /**
+     * The Null data.
+     */
+    private final String nullData;
+
+    /**
      * Instantiates a new Person entity.
      *
      * @param name the name
@@ -145,6 +150,7 @@ public class PersonEntity {
         this.floatNumber = random.nextFloat();
         this.bigIntegerNumber = BigInteger.valueOf(random.nextLong());
         this.bigDecimalNumber = BigDecimal.valueOf(random.nextDouble());
+        this.nullData = null;
 
         final ArrayNode jsonArray = Json.newArray();
         this.jsonNode = jsonArray;
@@ -297,6 +303,15 @@ public class PersonEntity {
      */
     public NumberEnum getNumberEnum() {
         return this.numberEnum;
+    }
+
+    /**
+     * Gets null data.
+     *
+     * @return the null data
+     */
+    public String getNullData() {
+        return this.nullData;
     }
 
     @Override

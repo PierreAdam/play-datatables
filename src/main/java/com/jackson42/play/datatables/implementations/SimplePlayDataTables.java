@@ -299,15 +299,7 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
 
         try {
             final Object obj = method.invoke(entity);
-            Converter<?> converter = null;
-
-            // Try getting a converter with the instance converters.
-            converter = this.getConverter(obj, this.converters);
-
-            if (converter == null) {
-                // Try getting a converter from the global converters.
-                converter = this.getConverter(obj, PlayDataTablesConfig.getInstance().getConverters());
-            }
+            final Converter<?> converter = this.tryFindConverter(obj);
 
             if (converter != null) {
                 converter.addToArray(data, obj, context.asGeneric());
@@ -320,13 +312,37 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
     }
 
     /**
+     * Try to find a converter for the given object.
+     *
+     * @param obj the obj
+     * @return the converter
+     */
+    protected Converter<?> tryFindConverter(final Object obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        Converter<?> converter = null;
+
+        // Try getting a converter with the instance converters.
+        converter = this.getConverterFromMap(obj, this.converters);
+
+        if (converter == null) {
+            // Try getting a converter from the global converters.
+            converter = this.getConverterFromMap(obj, PlayDataTablesConfig.getInstance().getConverters());
+        }
+
+        return converter;
+    }
+
+    /**
      * Gets converter.
      *
      * @param obj        the obj
      * @param converters the converters
      * @return the converter
      */
-    protected Converter<?> getConverter(final Object obj, final Map<Class<?>, Converter<?>> converters) {
+    protected Converter<?> getConverterFromMap(final Object obj, final Map<Class<?>, Converter<?>> converters) {
         final Class<?> objClass = obj.getClass();
 
         if (converters.containsKey(objClass)) {
