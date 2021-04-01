@@ -385,7 +385,7 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
     @Override
     public FieldBehavior<E, S, P> field(final String fieldName) {
         if (!this.fieldsBehavior.containsKey(fieldName)) {
-            this.fieldsBehavior.put(fieldName, new FieldBehavior<>());
+            this.setField(fieldName, new FieldBehavior<>());
         }
         return this.fieldsBehavior.get(fieldName);
     }

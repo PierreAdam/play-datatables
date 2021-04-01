@@ -63,10 +63,16 @@ public class DummyProvider {
      */
     public DummyProvider() {
         this.data = new ArrayList<>();
+    }
+
+    /**
+     * Initialize data.
+     */
+    public void initializeData() {
         final Faker faker = new Faker();
 
         for (int i = 0; i < DummyProvider.SAMPLE_SIZE; i++) {
-            this.data.add(new PersonEntity(faker.name()));
+            this.data.add(new PersonEntity(faker));
         }
     }
 

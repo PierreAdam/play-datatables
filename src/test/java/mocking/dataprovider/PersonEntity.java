@@ -26,6 +26,7 @@ package mocking.dataprovider;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.github.javafaker.Faker;
 import com.github.javafaker.Name;
 import mocking.dataprovider.enums.NumberEnum;
 import mocking.dataprovider.enums.SimpleEnum;
@@ -131,12 +132,16 @@ public class PersonEntity {
     private final String nullData;
 
     /**
-     * Instantiates a new Person entity.
-     *
-     * @param name the name
+     * The Address.
      */
-    public PersonEntity(final Name name) {
+    private final AddressEntity address;
+
+    /**
+     * Instantiates a new Person entity.
+     */
+    public PersonEntity(final Faker faker) {
         final Random random = new Random();
+        final Name name = faker.name();
         this.createdAt = DateTime.now().minusSeconds(random.nextInt(3600 * 24 * 200)); // Over the last 200 days
         this.uid = UUID.randomUUID();
         this.firstName = name.firstName();
@@ -159,6 +164,8 @@ public class PersonEntity {
 
         this.simpleEnum = SimpleEnum.rand(random);
         this.numberEnum = NumberEnum.rand(random);
+
+        this.address = new AddressEntity(faker);
     }
 
     /**
@@ -202,7 +209,7 @@ public class PersonEntity {
      *
      * @return the title
      */
-    public String getTitle() {
+    public String title() {
         return this.title;
     }
 
@@ -314,8 +321,17 @@ public class PersonEntity {
         return this.nullData;
     }
 
+    /**
+     * Gets address.
+     *
+     * @return the address
+     */
+    public AddressEntity getAddress() {
+        return this.address;
+    }
+
     @Override
     public String toString() {
-        return String.format("[%s, %s, %s, %s]", this.getFirstName(), this.getLastName(), this.getTitle(), this.getBloodGroup());
+        return String.format("[%s, %s, %s, %s]", this.getFirstName(), this.getLastName(), this.title(), this.getBloodGroup());
     }
 }

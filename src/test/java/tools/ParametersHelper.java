@@ -28,6 +28,7 @@ import com.jackson42.play.datatables.entities.Column;
 import com.jackson42.play.datatables.entities.Parameters;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -70,6 +71,7 @@ public class ParametersHelper {
                 .addColumn("simpleEnum")
                 .addColumn("numberEnum")
                 .addColumn("nullData")
+                .addColumn("address")
                 .addColumn("actions");
 
         return parameters;
@@ -78,12 +80,7 @@ public class ParametersHelper {
     /**
      * The type Column factory.
      */
-    private static class ColumnFactory {
-
-        /**
-         * The Id.
-         */
-        private int id;
+    public static class ColumnFactory {
 
         /**
          * The Columns.
@@ -94,8 +91,14 @@ public class ParametersHelper {
          * Instantiates a new Column factory.
          */
         public ColumnFactory() {
-            this.id = 0;
-            this.columns = new ArrayList<>();
+            this(new ArrayList<>());
+        }
+
+        /**
+         * Instantiates a new Column factory.
+         */
+        public ColumnFactory(final List<Column> columns) {
+            this.columns = columns;
         }
 
         /**
@@ -117,13 +120,14 @@ public class ParametersHelper {
          * @return the column factory
          */
         public ColumnFactory addColumn(final String name, final boolean searcheable, final boolean orderable) {
+            final int lastId = this.columns.stream().map(Column::getData).max(Comparator.comparingInt(o -> o)).orElse(-1);
+
             this.columns.add(new Column() {{
-                this.setData(ColumnFactory.this.id);
+                this.setData(lastId + 1);
                 this.setName(name);
                 this.setSearcheable(searcheable);
                 this.setOrderable(orderable);
             }});
-            this.id++;
             return this;
         }
 
