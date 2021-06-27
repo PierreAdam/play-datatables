@@ -22,30 +22,32 @@
  * SOFTWARE.
  */
 
-package mocking.dataprovider;
+package com.jackson42.play.datatables.interfaces;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.jackson42.play.datatables.converters.AbstractConverter;
-import com.jackson42.play.datatables.interfaces.Context;
-import com.jackson42.play.datatables.interfaces.Payload;
+import java.util.Map;
 
 /**
- * AddressConverter.
+ * Configurable.
  *
+ * @param <T> the type parameter
  * @author Pierre Adam
- * @since 21.04.01
+ * @since 21.04.09
  */
-public class AddressConverter extends AbstractConverter<AddressEntity> {
+public interface Configurable<T extends Configurable<T>> {
 
     /**
-     * Instantiates a new converter.
+     * Add converter play data tables config.
+     *
+     * @param <U>       the type parameter
+     * @param converter the converter
+     * @return the play data tables config
      */
-    public AddressConverter() {
-        super(AddressEntity.class);
-    }
+    <U> T addConverter(final Converter<U> converter);
 
-    @Override
-    protected void internalAddToArray(final ArrayNode array, final AddressEntity obj, final Context<Payload> context) {
-        array.add(String.format("%s %s %s", obj.getStreetAddress(), obj.getCity(), obj.getZipCode()));
-    }
+    /**
+     * Gets the converters.
+     *
+     * @return the converters
+     */
+    Map<Class<?>, Converter<?>> getConverters();
 }

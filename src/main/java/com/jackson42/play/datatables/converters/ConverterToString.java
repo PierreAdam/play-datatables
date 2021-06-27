@@ -35,7 +35,7 @@ import com.jackson42.play.datatables.interfaces.Payload;
  * @author Pierre Adam
  * @since 21.03.29
  */
-public abstract class ConverterToString<T> extends Converter<T> {
+public abstract class ConverterToString<T> extends AbstractConverter<T> {
 
     /**
      * Instantiates a new converter.

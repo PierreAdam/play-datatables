@@ -134,6 +134,17 @@ public class DataProviderTest {
      * Check dummy query.
      */
     @Test
+    @Order(0)
+    public void checkConverters() {
+        Assertions.assertNotNull(this.myDataTable);
+        Assertions.assertNotNull(this.myDataTable.getConverters());
+        Assertions.assertFalse(this.myDataTable.getConverters().isEmpty());
+    }
+
+    /**
+     * Check dummy query.
+     */
+    @Test
     @Order(1)
     public void checkDummyQuery() {
         final DummyProvider querySource = new DummyProvider();

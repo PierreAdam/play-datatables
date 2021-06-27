@@ -1,0 +1,12 @@
+com.jackson42.play.datatables.converters.standards.BigDecimalConverter
+com.jackson42.play.datatables.converters.standards.BigIntegerConverter
+com.jackson42.play.datatables.converters.standards.BooleanConverter
+com.jackson42.play.datatables.converters.standards.DateTimeConverter
+com.jackson42.play.datatables.converters.standards.DoubleConverter
+com.jackson42.play.datatables.converters.standards.EnumConverter
+com.jackson42.play.datatables.converters.standards.FloatConverter
+com.jackson42.play.datatables.converters.standards.IntegerConverter
+com.jackson42.play.datatables.converters.standards.JsonNodeConverter
+com.jackson42.play.datatables.converters.standards.LongConverter
+com.jackson42.play.datatables.converters.standards.StringConverter
+com.jackson42.play.datatables.converters.standards.UUIDConverter

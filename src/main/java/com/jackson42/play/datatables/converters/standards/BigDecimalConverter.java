@@ -25,7 +25,7 @@
 package com.jackson42.play.datatables.converters.standards;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.jackson42.play.datatables.converters.Converter;
+import com.jackson42.play.datatables.converters.AbstractConverter;
 import com.jackson42.play.datatables.interfaces.Context;
 import com.jackson42.play.datatables.interfaces.Payload;
 
@@ -37,7 +37,7 @@ import java.math.BigDecimal;
  * @author Pierre Adam
  * @since 21.03.29
  */
-public class BigDecimalConverter extends Converter<BigDecimal> {
+public class BigDecimalConverter extends AbstractConverter<BigDecimal> {
 
     /**
      * Instantiates a new converter.

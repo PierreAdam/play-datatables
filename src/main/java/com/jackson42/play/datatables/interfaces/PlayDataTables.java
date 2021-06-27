@@ -25,7 +25,6 @@
 package com.jackson42.play.datatables.interfaces;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.jackson42.play.datatables.converters.Converter;
 import com.jackson42.play.datatables.entities.Parameters;
 import com.jackson42.play.datatables.entities.internal.FieldBehavior;
 import com.jackson42.play.datatables.enumerations.OrderEnum;
@@ -46,7 +45,7 @@ import java.util.function.Function;
  * @author Pierre Adam
  * @since 21.03.01
  */
-public interface PlayDataTables<E, S, P extends Payload> {
+public interface PlayDataTables<E, S, P extends Payload> extends Configurable<PlayDataTables<E, S, P>> {
 
     /**
      * The initial where condition. Is called on each forged request and should not contains orders or weird things.
@@ -166,12 +165,4 @@ public interface PlayDataTables<E, S, P extends Payload> {
      * @param fieldBehavior the field behavior
      */
     void setField(final String fieldName, final FieldBehavior<E, S, P> fieldBehavior);
-
-    /**
-     * Add a converter specific to this instance.
-     *
-     * @param <T>       the type parameter
-     * @param converter the converter
-     */
-    <T> void addConverter(final Converter<T> converter);
 }

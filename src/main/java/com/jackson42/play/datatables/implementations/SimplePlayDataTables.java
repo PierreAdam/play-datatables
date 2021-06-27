@@ -26,8 +26,6 @@ package com.jackson42.play.datatables.implementations;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.jackson42.play.datatables.configs.PlayDataTablesConfig;
-import com.jackson42.play.datatables.converters.Converter;
 import com.jackson42.play.datatables.entities.Column;
 import com.jackson42.play.datatables.entities.Parameters;
 import com.jackson42.play.datatables.entities.internal.AjaxResult;
@@ -35,6 +33,7 @@ import com.jackson42.play.datatables.entities.internal.DataSource;
 import com.jackson42.play.datatables.entities.internal.FieldBehavior;
 import com.jackson42.play.datatables.enumerations.OrderEnum;
 import com.jackson42.play.datatables.interfaces.Context;
+import com.jackson42.play.datatables.interfaces.Converter;
 import com.jackson42.play.datatables.interfaces.Payload;
 import com.jackson42.play.datatables.interfaces.PlayDataTables;
 import org.slf4j.Logger;
@@ -49,6 +48,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -127,6 +127,12 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
         this.fieldsBehavior = new HashMap<>();
         this.converters = new HashMap<>();
         this.globalSearchHandler = null;
+        this.initProviderConsumer = null;
+
+        final ServiceLoader<Converter> serviceLoader = ServiceLoader.load(Converter.class);
+        serviceLoader.forEach(converter -> {
+            this.converters.put(converter.getBackedType(), converter);
+        });
     }
 
     @Override
@@ -299,7 +305,7 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
 
         try {
             final Object obj = method.invoke(entity);
-            final Converter<?> converter = this.tryFindConverter(obj);
+            final Converter<?> converter = this.resolveConverter(obj);
 
             if (converter != null) {
                 converter.addToArray(data, obj, context.asGeneric());
@@ -315,43 +321,23 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
      * Try to find a converter for the given object.
      *
      * @param obj the obj
-     * @return the converter
+     * @return the converter or null if no suitable converter was found
      */
-    protected Converter<?> tryFindConverter(final Object obj) {
+    protected Converter<?> resolveConverter(final Object obj) {
         if (obj == null) {
             return null;
         }
 
-        Converter<?> converter = null;
-
         // Try getting a converter with the instance converters.
-        converter = this.getConverterFromMap(obj, this.converters);
-
-        if (converter == null) {
-            // Try getting a converter from the global converters.
-            converter = this.getConverterFromMap(obj, PlayDataTablesConfig.getInstance().getConverters());
-        }
-
-        return converter;
-    }
-
-    /**
-     * Gets converter.
-     *
-     * @param obj        the obj
-     * @param converters the converters
-     * @return the converter
-     */
-    protected Converter<?> getConverterFromMap(final Object obj, final Map<Class<?>, Converter<?>> converters) {
         final Class<?> objClass = obj.getClass();
 
-        if (converters.containsKey(objClass)) {
+        if (this.converters.containsKey(objClass)) {
             // If the class is explicitly added with a converter.
-            return converters.get(objClass);
+            return this.converters.get(objClass);
         }
 
         // If a converter could match with a sub-type.
-        for (final Map.Entry<Class<?>, Converter<?>> entry : converters.entrySet()) {
+        for (final Map.Entry<Class<?>, Converter<?>> entry : this.converters.entrySet()) {
             if (entry.getKey().isAssignableFrom(objClass)) {
                 return entry.getValue();
             }
@@ -396,7 +382,13 @@ public abstract class SimplePlayDataTables<E, S, P extends Payload> extends Cust
     }
 
     @Override
-    public <T> void addConverter(final Converter<T> converter) {
+    public <T> PlayDataTables<E, S, P> addConverter(final Converter<T> converter) {
         this.converters.put(converter.getBackedType(), converter);
+        return this;
+    }
+
+    @Override
+    public Map<Class<?>, Converter<?>> getConverters() {
+        return this.converters;
     }
 }

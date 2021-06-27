@@ -81,6 +81,11 @@ at [play-ebean-datatables](https://github.com/PierreAdam/play-ebean-datatables)
 
 ### Changelog
 
+#### 21.06
+
+- Remove global configuration.
+- The default converters are now loaded from a `ServiceLoader`
+
 #### 21.04u1
 
 - Patch NPE when a value is at null in the entity.

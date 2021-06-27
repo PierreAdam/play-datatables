@@ -26,6 +26,7 @@ package com.jackson42.play.datatables.converters;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.jackson42.play.datatables.interfaces.Context;
+import com.jackson42.play.datatables.interfaces.Converter;
 import com.jackson42.play.datatables.interfaces.Payload;
 
 /**
@@ -35,7 +36,7 @@ import com.jackson42.play.datatables.interfaces.Payload;
  * @author Pierre Adam
  * @since 21.03.28
  */
-public abstract class Converter<T> {
+public abstract class AbstractConverter<T> implements Converter<T> {
 
     /**
      * The class of T.
@@ -47,26 +48,16 @@ public abstract class Converter<T> {
      *
      * @param tClass the class of T
      */
-    public Converter(final Class<T> tClass) {
+    public AbstractConverter(final Class<T> tClass) {
         this.tClass = tClass;
     }
 
-    /**
-     * Gets backed type.
-     *
-     * @return the backed type
-     */
+    @Override
     public final Class<T> getBackedType() {
         return this.tClass;
     }
 
-    /**
-     * Add the object as a value in the ArrayNode.
-     *
-     * @param array   the array
-     * @param obj     the object
-     * @param context the context
-     */
+    @Override
     public final void addToArray(final ArrayNode array, final Object obj, final Context<Payload> context) {
         this.internalAddToArray(array, this.getBackedType().cast(obj), context);
     }
